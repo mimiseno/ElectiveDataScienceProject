@@ -198,7 +198,7 @@ This project is submitted as part of our Data Science coursework. All analyses a
 For questions or collaboration:
 - **Primary Contact:** Sereno, Micah T.
 - **Course:** Data Science Elective 4
-- **Institution:** [Your Institution Name]
+- **Institution:** Lyceum of the Philippines, Cavite
 
 ---
 
