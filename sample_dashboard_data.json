@@ -1,0 +1,89 @@
+{
+  "cluster_summary": {
+    "Avg_Recency": {
+      "0": 25.5,
+      "1": 89.3,
+      "2": 156.7,
+      "3": 287.4
+    },
+    "Avg_Frequency": {
+      "0": 127.8,
+      "1": 45.2,
+      "2": 12.6,
+      "3": 3.1
+    },
+    "Avg_Monetary": {
+      "0": 8456.32,
+      "1": 2134.67,
+      "2": 567.89,
+      "3": 189.45
+    },
+    "Customer_Count": {
+      "0": 432,
+      "1": 1245,
+      "2": 876,
+      "3": 654
+    }
+  },
+  "forecast_summary": {
+    "avg_daily_sales": 45678.92,
+    "max_sales": 67234.56,
+    "min_sales": 32145.78,
+    "mape": 12.34,
+    "rmse": 5432.10,
+    "total_customers": 3207,
+    "num_clusters": 4,
+    "total_revenue": 9876543.21,
+    "projected_30day": 1370367.60
+  },
+  "cluster_distribution": {
+    "0": 432,
+    "1": 1245,
+    "2": 876,
+    "3": 654
+  },
+  "forecast_next_7days": [
+    {
+      "ds": "2024-12-09",
+      "yhat": 46234.56,
+      "yhat_lower": 41567.23,
+      "yhat_upper": 50901.89
+    },
+    {
+      "ds": "2024-12-10",
+      "yhat": 48756.34,
+      "yhat_lower": 44123.45,
+      "yhat_upper": 53389.23
+    },
+    {
+      "ds": "2024-12-11",
+      "yhat": 47123.78,
+      "yhat_lower": 42456.89,
+      "yhat_upper": 51790.67
+    },
+    {
+      "ds": "2024-12-12",
+      "yhat": 49234.90,
+      "yhat_lower": 44567.12,
+      "yhat_upper": 53902.68
+    },
+    {
+      "ds": "2024-12-13",
+      "yhat": 51234.56,
+      "yhat_lower": 46789.34,
+      "yhat_upper": 55679.78
+    },
+    {
+      "ds": "2024-12-14",
+      "yhat": 54678.90,
+      "yhat_lower": 49234.56,
+      "yhat_upper": 60123.24
+    },
+    {
+      "ds": "2024-12-15",
+      "yhat": 56789.12,
+      "yhat_lower": 51234.78,
+      "yhat_upper": 62343.46
+    }
+  ]
+}
