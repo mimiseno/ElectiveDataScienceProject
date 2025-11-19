@@ -1,0 +1,23 @@
+{
+  "name": "ecommerce-analytics-dashboard",
+  "version": "1.0.0",
+  "description": "AI-Powered E-commerce Analytics Dashboard",
+  "scripts": {
+    "dev": "npx live-server frontend --port=3000 --open=/dashboard.html",
+    "start": "npm run dev",
+    "backend": "cd backend && python api.py",
+    "both": "concurrently \"npm run backend\" \"npm run dev\""
+  },
+  "keywords": [
+    "ecommerce",
+    "analytics",
+    "machine-learning",
+    "dashboard"
+  ],
+  "author": "Sereno, Page, Dulce, Laudato",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "live-server": "^1.2.2"
+  }
+}

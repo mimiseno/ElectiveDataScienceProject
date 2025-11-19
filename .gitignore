@@ -19,11 +19,24 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+pip-log.txt
+pip-delete-this-directory.txt
+*.pyc
 
 # Virtual environments
 venv/
 ENV/
 env/
+.venv
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.npm
+.yarn-integrity
 
 # IDE
 .vscode/
@@ -31,19 +44,58 @@ env/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
 
 # OS
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # Jupyter Notebook
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
-# Data files (optional - comment out if you want to include)
-# *.csv
-# *.xlsx
-# *.json
+# Data files - exclude cleaned/generated files but keep original dataset
+cleaned_data.csv
+dashboard_data.json
+rfm_table.csv
+customer_segments.csv
+segment_summary.csv
+sales_forecast_*.csv
+
+# Keep original dataset
+!Online-Retail.csv
+!Online-Retail.xlsx
+
+# Visualizations - exclude generated plots
+*.png
+rfm_distributions.png
+elbow_method.png
+customer_segments_3d.png
+sales_forecast.png
+forecast_components.png
+
+# Models - keep the trained models
+!ai_models/*.joblib
 
 # Logs
 *.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Documentation (optional - uncomment to exclude)
+# IMPLEMENTATION_COMPLETE.md
+# COMMANDS.md
+
+# Windows batch files (optional)
+*.bat
+
+# Cache
+.cache/
+*.cache

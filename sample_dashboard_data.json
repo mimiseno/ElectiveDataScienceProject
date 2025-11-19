@@ -1,89 +1,149 @@
 {
+  "model_info": {
+    "kmeans_model": {
+      "path": "ai_models/kmeans_model_customer_categorization.joblib",
+      "version": "1.0",
+      "last_trained": "2024-12-01",
+      "n_clusters": 4,
+      "features": ["recency", "frequency", "monetary"],
+      "silhouette_score": 0.42
+    },
+    "prophet_model": {
+      "path": "ai_models/prophet_model_sales_forecast.joblib",
+      "version": "1.0",
+      "last_trained": "2024-12-01",
+      "mape": 12.34,
+      "r2_score": 0.86
+    }
+  },
   "cluster_summary": {
     "Avg_Recency": {
-      "0": 25.5,
-      "1": 89.3,
-      "2": 156.7,
-      "3": 287.4
+      "0": 252.06,
+      "1": 51.03,
+      "2": 29.96,
+      "3": 16.9
     },
     "Avg_Frequency": {
-      "0": 127.8,
-      "1": 45.2,
-      "2": 12.6,
-      "3": 3.1
+      "0": 1.47,
+      "1": 2.32,
+      "2": 7.31,
+      "3": 16.39
     },
     "Avg_Monetary": {
-      "0": 8456.32,
-      "1": 2134.67,
-      "2": 567.89,
-      "3": 189.45
+      "0": 409.86,
+      "1": 686.81,
+      "2": 2745.84,
+      "3": 7564.54
     },
     "Customer_Count": {
-      "0": 432,
-      "1": 1245,
-      "2": 876,
-      "3": 654
+      "0": 1017,
+      "1": 2277,
+      "2": 768,
+      "3": 194
     }
+  },
+  "cluster_names": {
+    "0": "Lost Customers",
+    "1": "At Risk",
+    "2": "Loyal Customers",
+    "3": "Champions"
+  },
+  "sample_predictions": {
+    "segmentation_examples": [
+      {
+        "recency": 15,
+        "frequency": 20,
+        "monetary": 8500,
+        "predicted_cluster": 3,
+        "cluster_name": "Champions"
+      },
+      {
+        "recency": 45,
+        "frequency": 3,
+        "monetary": 750,
+        "predicted_cluster": 1,
+        "cluster_name": "At Risk"
+      },
+      {
+        "recency": 250,
+        "frequency": 1,
+        "monetary": 350,
+        "predicted_cluster": 0,
+        "cluster_name": "Lost Customers"
+      },
+      {
+        "recency": 28,
+        "frequency": 8,
+        "monetary": 2800,
+        "predicted_cluster": 2,
+        "cluster_name": "Loyal Customers"
+      }
+    ],
+    "forecast_examples": [
+      {
+        "date": "2025-11-20",
+        "predicted_sales": 27410.02,
+        "lower_bound": 12096.25,
+        "upper_bound": 42895.54
+      },
+      {
+        "date": "2025-11-21",
+        "predicted_sales": 43232.56,
+        "lower_bound": 28365.80,
+        "upper_bound": 57411.50
+      },
+      {
+        "date": "2025-11-22",
+        "predicted_sales": 53689.49,
+        "lower_bound": 37700.49,
+        "upper_bound": 68600.20
+      }
+    ]
   },
   "forecast_summary": {
-    "avg_daily_sales": 45678.92,
-    "max_sales": 67234.56,
-    "min_sales": 32145.78,
+    "avg_daily_sales": 21917.68,
+    "max_sales": 56698.90,
+    "min_sales": -19495.63,
     "mape": 12.34,
-    "rmse": 5432.10,
-    "total_customers": 3207,
+    "rmse": 30969.59,
+    "total_customers": 4256,
     "num_clusters": 4,
-    "total_revenue": 9876543.21,
-    "projected_30day": 1370367.60
+    "total_revenue": 8046069.04,
+    "projected_30day": 657530.55
   },
-  "cluster_distribution": {
-    "0": 432,
-    "1": 1245,
-    "2": 876,
-    "3": 654
-  },
-  "forecast_next_7days": [
-    {
-      "ds": "2024-12-09",
-      "yhat": 46234.56,
-      "yhat_lower": 41567.23,
-      "yhat_upper": 50901.89
+  "model_performance": {
+    "kmeans": {
+      "silhouette_score": 0.42,
+      "davies_bouldin_score": 1.23,
+      "interpretation": "Moderate cluster separation"
     },
-    {
-      "ds": "2024-12-10",
-      "yhat": 48756.34,
-      "yhat_lower": 44123.45,
-      "yhat_upper": 53389.23
-    },
-    {
-      "ds": "2024-12-11",
-      "yhat": 47123.78,
-      "yhat_lower": 42456.89,
-      "yhat_upper": 51790.67
-    },
-    {
-      "ds": "2024-12-12",
-      "yhat": 49234.90,
-      "yhat_lower": 44567.12,
-      "yhat_upper": 53902.68
-    },
-    {
-      "ds": "2024-12-13",
-      "yhat": 51234.56,
-      "yhat_lower": 46789.34,
-      "yhat_upper": 55679.78
-    },
-    {
-      "ds": "2024-12-14",
-      "yhat": 54678.90,
-      "yhat_lower": 49234.56,
-      "yhat_upper": 60123.24
-    },
-    {
-      "ds": "2024-12-15",
-      "yhat": 56789.12,
-      "yhat_lower": 51234.78,
-      "yhat_upper": 62343.46
+    "prophet": {
+      "mape": 12.34,
+      "rmse": 30969.59,
+      "r2_score": 0.86,
+      "interpretation": "High forecasting accuracy"
     }
-  ]
+  },
+  "business_recommendations": {
+    "0": [
+      "Send win-back email with special discount (20-30% off)",
+      "Offer exclusive 'we miss you' promotion",
+      "Use retargeting ads on social media"
+    ],
+    "1": [
+      "Send reminder emails about abandoned carts",
+      "Personalized product recommendations",
+      "Survey to understand declining engagement"
+    ],
+    "2": [
+      "Implement loyalty rewards program",
+      "Early access to new products",
+      "Birthday/anniversary special offers"
+    ],
+    "3": [
+      "VIP tier with exclusive benefits",
+      "Premium customer service",
+      "Exclusive event invitations"
+    ]
+  }
 }

@@ -1,0 +1,4 @@
+Terminal:
+
+to run backend: npm run backend
+to run frontend: npm run dev
