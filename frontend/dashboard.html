@@ -293,18 +293,34 @@
         <!-- Customer Input Section -->
         <div class="upload-section">
             <h2 style="margin-bottom: 20px; color: #333;">👤 Customer Segmentation</h2>
+            <p style="color: #666; margin-bottom: 20px; font-size: 0.95em;">
+                Enter customer RFM (Recency, Frequency, Monetary) values to predict their segment.
+                <br><em>Currency: Philippine Peso (₱)</em>
+            </p>
             <div class="dashboard-grid">
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; color: #333; font-weight: 600; margin-bottom: 8px;">Recency (days since last purchase)</label>
-                    <input type="number" id="recency" placeholder="e.g., 30" min="0" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+                    <input type="number" id="recency" placeholder="e.g., 150" min="1" max="400" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+                    <small style="color: #888;">Valid range: 1 - 400 days</small>
                 </div>
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; color: #333; font-weight: 600; margin-bottom: 8px;">Frequency (number of purchases)</label>
-                    <input type="number" id="frequency" placeholder="e.g., 5" min="0" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+                    <input type="number" id="frequency" placeholder="e.g., 1" min="1" max="10" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+                    <small style="color: #888;">Valid range: 1 - 10 purchases</small>
                 </div>
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; color: #333; font-weight: 600; margin-bottom: 8px;">Monetary (total spending in £)</label>
-                    <input type="number" id="monetary" placeholder="e.g., 1500" min="0" step="0.01" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+                    <label style="display: block; color: #333; font-weight: 600; margin-bottom: 8px;">Monetary (total spending in ₱)</label>
+                    <input type="number" id="monetary" placeholder="e.g., 2000" min="500" max="50000" step="100" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+                    <small style="color: #888;">Valid range: ₱500 - ₱50,000</small>
+                </div>
+            </div>
+            <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+                <strong>💡 Example Profiles (4 Segments - Olist Dataset):</strong>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; font-size: 0.9em;">
+                    <div>💤 <strong>Lost:</strong> R=380, F=1, M=₱1,100</div>
+                    <div>⚠️ <strong>At Risk:</strong> R=130, F=1, M=₱1,100</div>
+                    <div>💙 <strong>Loyal:</strong> R=230, F=1, M=₱4,300</div>
+                    <div>👑 <strong>Champion:</strong> R=220, F=2, M=₱2,300</div>
                 </div>
             </div>
             <button class="upload-btn" onclick="predictCustomerSegment()">🎯 Predict Customer Segment</button>
@@ -322,6 +338,14 @@
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; color: #333; font-weight: 600; margin-bottom: 8px;">Number of Days to Forecast</label>
                     <input type="number" id="forecastDays" placeholder="e.g., 7" min="1" max="90" value="7" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #333; font-weight: 600; margin-bottom: 8px;">Forecasting Model</label>
+                    <select id="forecastModel" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em; background: white;">
+                        <option value="ensemble">🎯 Ensemble (Prophet + XGBoost)</option>
+                        <option value="prophet">📊 Prophet (Time-Series)</option>
+                        <option value="xgboost">🚀 XGBoost (Feature-Based)</option>
+                    </select>
                 </div>
             </div>
             <button class="upload-btn" onclick="predictSalesForecast()">📊 Generate Forecast</button>
@@ -458,6 +482,7 @@
         // API configuration
         const API_BASE_URL = 'http://localhost:5000';
 
+        // 4 Customer Segments as specified in research paper
         const clusterNames = {
             0: '💤 Lost Customers',
             1: '⚠️ At Risk',
@@ -527,10 +552,14 @@
         }
 
         function displaySegmentResult(data, resultDiv) {
+            const confidenceColor = data.confidence.overall >= 70 ? '#28a745' : 
+                                   data.confidence.overall >= 50 ? '#ffc107' : '#dc3545';
+            
             resultDiv.innerHTML = `
                 <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-top: 15px;">
                     ✅ <strong>Analysis Complete!</strong><br>
-                    Customer Segment: <strong>${data.cluster_name}</strong>
+                    Customer Segment: <strong>${data.cluster_name}</strong> | 
+                    Confidence: <strong style="color: ${confidenceColor};">${data.confidence.overall}%</strong>
                 </div>
             `;
 
@@ -538,16 +567,56 @@
             document.getElementById('resultsSection').style.display = 'block';
             
             const clusterGradients = {
-                0: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                0: 'linear-gradient(135deg, #eb3349 0%, #f45c43 100%)',
                 1: 'linear-gradient(135deg, #ffa751 0%, #ffe259 100%)',
                 2: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 3: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)'
             };
 
+            // Build cluster probabilities HTML
+            let probabilitiesHTML = '';
+            if (data.all_cluster_probabilities) {
+                probabilitiesHTML = '<div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px;"><h4 style="margin-bottom: 10px;">📊 All Cluster Probabilities:</h4>';
+                for (const [cluster, prob] of Object.entries(data.all_cluster_probabilities)) {
+                    const barWidth = Math.max(prob, 2);
+                    probabilitiesHTML += `
+                        <div style="margin: 8px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                <span>${cluster}</span>
+                                <span>${prob}%</span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.3); border-radius: 4px; height: 8px;">
+                                <div style="background: white; width: ${barWidth}%; height: 100%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                probabilitiesHTML += '</div>';
+            }
+
+            // Format monetary value
+            const monetaryValue = data.rfm_values.monetary.toLocaleString('en-PH');
+
             document.getElementById('segmentDisplay').innerHTML = `
-                <div style="background: ${clusterGradients[data.cluster]}; color: white; padding: 25px; border-radius: 12px;">
+                <div style="background: ${clusterGradients[data.cluster] || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}; color: white; padding: 25px; border-radius: 12px;">
                     <div style="font-size: 1.6em; margin-bottom: 15px; font-weight: bold;">${data.cluster_name}</div>
                     <p style="margin: 15px 0; line-height: 1.6;">${data.description}</p>
+                    
+                    <!-- Confidence Metrics -->
+                    <div style="background: rgba(255,255,255,0.15); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h4 style="margin-bottom: 10px;">🎯 Confidence Metrics</h4>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                            <div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">Overall Confidence</div>
+                                <div style="font-size: 1.5em; font-weight: bold;">${data.confidence.overall}%</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">Cluster Separation</div>
+                                <div style="font-size: 1.5em; font-weight: bold;">${data.confidence.cluster_separation}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px;">
                         <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
                             <div style="font-size: 0.9em; opacity: 0.9; margin-bottom: 5px;">Recency</div>
@@ -555,17 +624,18 @@
                         </div>
                         <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
                             <div style="font-size: 0.9em; opacity: 0.9; margin-bottom: 5px;">Frequency</div>
-                            <div style="font-size: 1.4em; font-weight: bold;">${data.rfm_values.frequency}</div>
+                            <div style="font-size: 1.4em; font-weight: bold;">${data.rfm_values.frequency} purchases</div>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
                             <div style="font-size: 0.9em; opacity: 0.9; margin-bottom: 5px;">Monetary</div>
-                            <div style="font-size: 1.4em; font-weight: bold;">£${data.rfm_values.monetary.toFixed(2)}</div>
+                            <div style="font-size: 1.4em; font-weight: bold;">₱${monetaryValue}</div>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 0.9em; opacity: 0.9; margin-bottom: 5px;">Segment</div>
+                            <div style="font-size: 0.9em; opacity: 0.9; margin-bottom: 5px;">Segment ID</div>
                             <div style="font-size: 1.4em; font-weight: bold;">Cluster ${data.cluster}</div>
                         </div>
                     </div>
+                    ${probabilitiesHTML}
                 </div>
                 <div style="margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
                     <h3 style="color: #333; margin-bottom: 15px;">💡 Recommended Actions:</h3>
@@ -582,6 +652,7 @@
         async function predictSalesForecast() {
             const startDate = document.getElementById('forecastDate').value;
             const periods = parseInt(document.getElementById('forecastDays').value);
+            const model = document.getElementById('forecastModel').value;
             const resultDiv = document.getElementById('forecastResult');
 
             // Validate inputs
@@ -590,7 +661,13 @@
                 return;
             }
 
-            resultDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #666; font-size: 1.1em;">🔄 Generating forecast with Prophet model...</div>';
+            const modelNames = {
+                'ensemble': 'Ensemble (Prophet + XGBoost)',
+                'prophet': 'Prophet',
+                'xgboost': 'XGBoost'
+            };
+
+            resultDiv.innerHTML = `<div style="text-align: center; padding: 20px; color: #666; font-size: 1.1em;">🔄 Generating forecast with ${modelNames[model]} model...</div>`;
 
             try {
                 const response = await fetch(`${API_BASE_URL}/predict/forecast`, {
@@ -598,7 +675,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ start_date: startDate, periods: periods })
+                    body: JSON.stringify({ start_date: startDate, periods: periods, model: model })
                 });
 
                 if (response.ok) {
@@ -614,10 +691,16 @@
         }
 
         function displayForecastResult(data, resultDiv) {
+            const avgConfidence = data.summary.avg_confidence || 0;
+            const confidenceColor = avgConfidence >= 70 ? '#28a745' : 
+                                   avgConfidence >= 50 ? '#ffc107' : '#dc3545';
+            
             resultDiv.innerHTML = `
                 <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-top: 15px;">
                     ✅ <strong>Forecast Generated!</strong><br>
-                    ${data.summary.periods}-day forecast starting from ${data.summary.start_date}
+                    Model: <strong>${data.model_used}</strong> | 
+                    ${data.summary.periods}-day forecast starting from ${data.summary.start_date} |
+                    Avg Confidence: <strong style="color: ${confidenceColor};">${avgConfidence.toFixed(1)}%</strong>
                 </div>
             `;
 
@@ -625,6 +708,9 @@
             document.getElementById('resultsSection').style.display = 'block';
             
             let tableHTML = `
+                <div style="margin-bottom: 15px; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px;">
+                    <strong>🤖 Model Used:</strong> ${data.model_used}
+                </div>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                     <thead>
                         <tr style="background: #667eea; color: white;">
@@ -639,9 +725,8 @@
             `;
 
             data.forecast.forEach(row => {
-                const uncertaintyPct = ((row.yhat_upper - row.yhat_lower) / row.yhat) * 100;
-                const confidence = 100 - uncertaintyPct;
-                const badgeClass = confidence > 70 ? 'badge-success' : confidence > 50 ? 'badge-warning' : 'badge-danger';
+                const confidence = row.confidence || 0;
+                const badgeClass = confidence >= 70 ? 'badge-success' : confidence >= 50 ? 'badge-warning' : 'badge-danger';
                 
                 tableHTML += `
                     <tr style="border-bottom: 1px solid #eee;">
@@ -659,18 +744,32 @@
             tableHTML += `
                 <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
                     <h3 style="color: #333; margin-bottom: 15px;">📊 Forecast Summary</h3>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee;">
-                        <span style="color: #666;">Average Daily Sales</span>
-                        <span style="color: #667eea; font-weight: bold; font-size: 1.1em;">${formatCurrency(data.summary.avg_daily_sales)}</span>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            <span style="color: #666;">Average Daily Sales</span>
+                            <span style="color: #667eea; font-weight: bold; font-size: 1.1em;">${formatCurrency(data.summary.avg_daily_sales)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            <span style="color: #666;">Total ${data.summary.periods}-Day Projection</span>
+                            <span style="color: #667eea; font-weight: bold; font-size: 1.1em;">${formatCurrency(data.summary.total_projected)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            <span style="color: #666;">Average Confidence</span>
+                            <span style="color: ${confidenceColor}; font-weight: bold; font-size: 1.1em;">${avgConfidence.toFixed(1)}%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            <span style="color: #666;">Uncertainty Range</span>
+                            <span style="color: #667eea; font-weight: bold; font-size: 1.1em;">${data.summary.uncertainty_range}</span>
+                        </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee;">
-                        <span style="color: #666;">Total ${data.summary.periods}-Day Projection</span>
-                        <span style="color: #667eea; font-weight: bold; font-size: 1.1em;">${formatCurrency(data.summary.total_projected)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0;">
-                        <span style="color: #666;">Uncertainty Range</span>
-                        <span style="color: #667eea; font-weight: bold; font-size: 1.1em;">${data.summary.uncertainty_range}</span>
-                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; padding: 15px; background: #e8f4fd; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <strong>🔍 Models Available:</strong>
+                    <span style="margin-left: 10px;">
+                        Prophet: ${data.models_available && data.models_available.prophet ? '✅' : '❌'} |
+                        XGBoost: ${data.models_available && data.models_available.xgboost ? '✅' : '❌'}
+                    </span>
                 </div>
             `;
 
@@ -681,7 +780,7 @@
         }
 
         function formatCurrency(value) {
-            return '£' + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            return '₱' + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
         }
     </script>
 </body>

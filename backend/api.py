@@ -5,6 +5,8 @@ Serves pre-trained ML models for customer segmentation and sales forecasting
 Models:
 - K-Means: Customer segmentation based on RFM analysis
 - Prophet: Time-series sales forecasting
+- XGBoost: Feature-based sales prediction
+- Ensemble: Weighted combination of Prophet + XGBoost
 
 Team: Sereno, Page, Dulce, Laudato
 Teacher: Sir Charlston Sean Gono
@@ -16,6 +18,7 @@ import joblib
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+from scipy.spatial.distance import cdist
 import os
 
 app = Flask(__name__)
@@ -25,63 +28,106 @@ CORS(app)  # Enable CORS for frontend requests
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KMEANS_MODEL_PATH = os.path.join(BASE_DIR, 'ai_models', 'kmeans_model_customer_categorization.joblib')
 PROPHET_MODEL_PATH = os.path.join(BASE_DIR, 'ai_models', 'prophet_model_sales_forecast.joblib')
+XGBOOST_MODEL_PATH = os.path.join(BASE_DIR, 'ai_models', 'xgboost_model_sales_forecast.joblib')
 RFM_SCALER_PATH = os.path.join(BASE_DIR, 'ai_models', 'rfm_scaler.joblib')
 
 # Load models at startup
+kmeans_model = None
+prophet_model = None
+xgboost_model = None
+rfm_scaler = None
+
 try:
     kmeans_model = joblib.load(KMEANS_MODEL_PATH)
-    prophet_model = joblib.load(PROPHET_MODEL_PATH)
-    rfm_scaler = joblib.load(RFM_SCALER_PATH)
-    print("✅ Models loaded successfully!")
-    print(f"   - K-Means model: {KMEANS_MODEL_PATH}")
-    print(f"   - Prophet model: {PROPHET_MODEL_PATH}")
-    print(f"   - RFM Scaler: {RFM_SCALER_PATH}")
+    print(f"✅ K-Means model loaded: {KMEANS_MODEL_PATH}")
 except Exception as e:
-    print(f"❌ Error loading models: {e}")
-    kmeans_model = None
-    prophet_model = None
-    rfm_scaler = None
+    print(f"❌ Error loading K-Means model: {e}")
 
-# Cluster mapping
+try:
+    prophet_model = joblib.load(PROPHET_MODEL_PATH)
+    print(f"✅ Prophet model loaded: {PROPHET_MODEL_PATH}")
+except Exception as e:
+    print(f"❌ Error loading Prophet model: {e}")
+
+try:
+    xgboost_model = joblib.load(XGBOOST_MODEL_PATH)
+    print(f"✅ XGBoost model loaded: {XGBOOST_MODEL_PATH}")
+except Exception as e:
+    print(f"❌ Error loading XGBoost model: {e}")
+
+try:
+    rfm_scaler = joblib.load(RFM_SCALER_PATH)
+    print(f"✅ RFM Scaler loaded: {RFM_SCALER_PATH}")
+except Exception as e:
+    print(f"❌ Error loading RFM Scaler: {e}")
+
+# Currency settings
+# Model is trained on Brazilian Real (BRL) from Olist dataset
+# Display currency is Philippine Peso (PHP)
+# 1 BRL = ~10.5 PHP (as of 2024)
+BRL_TO_PHP = 10.5
+MODEL_CURRENCY = 'BRL'
+DISPLAY_CURRENCY = 'PHP'
+CURRENCY_SYMBOL = '₱'
+
+# Cluster mapping (4 clusters) - Based on actual Olist-trained model centroids:
+# Cluster 0: R=231d, F=1.0, M=R$414 -> Loyal Customers (high monetary despite low frequency)
+# Cluster 1: R=383d, F=1.0, M=R$108 -> Lost Customers (highest recency, lowest monetary)
+# Cluster 2: R=220d, F=2.0, M=R$224 -> Champions (best frequency, good monetary)
+# Cluster 3: R=129d, F=1.0, M=R$108 -> At Risk (lowest recency but low engagement)
 CLUSTER_NAMES = {
-    0: "Lost Customers",
-    1: "At Risk",
-    2: "Loyal Customers",
-    3: "Champions"
+    0: "Loyal Customers",
+    1: "Lost Customers",
+    2: "Champions",
+    3: "At Risk"
 }
 
 CLUSTER_DESCRIPTIONS = {
-    0: "Customers who haven't purchased recently and have low engagement. Need win-back campaigns.",
-    1: "Previously active customers showing declining engagement. Require re-engagement strategies.",
-    2: "Frequent buyers with consistent spending. Focus on loyalty rewards and retention.",
-    3: "High-value, recent buyers with frequent purchases. Target for VIP programs and upselling."
+    0: "Customers with high spending but infrequent purchases. Focus on increasing purchase frequency through loyalty programs.",
+    1: "Customers who haven't purchased recently and have low engagement. They need win-back campaigns and special re-activation offers.",
+    2: "Best customers with highest frequency and good spending. Target for VIP programs, exclusive offers, and referral programs.",
+    3: "Recent customers with low engagement showing early warning signs. Re-engage before they become lost customers."
 }
 
 CLUSTER_RECOMMENDATIONS = {
     0: [
-        "📧 Send win-back email with special discount (20-30% off)",
-        "🎁 Offer exclusive 'we miss you' promotion",
-        "📱 Use retargeting ads on social media",
-        "💰 Provide loyalty points bonus for return"
-    ],
-    1: [
-        "⏰ Send reminder emails about abandoned carts",
-        "🎯 Personalized product recommendations",
-        "📊 Survey to understand declining engagement",
-        "🔔 Re-engage with limited-time offers"
-    ],
-    2: [
         "⭐ Implement loyalty rewards program",
         "🎁 Early access to new products",
         "💝 Birthday/anniversary special offers",
-        "📢 Request reviews and referrals"
+        "📢 Request reviews and referrals",
+        "🎪 Invite to exclusive member events"
+    ],
+    1: [
+        "📧 Send win-back email with special discount (20-30% off)",
+        "🎁 Offer exclusive 'we miss you' promotion",
+        "📱 Use retargeting ads on social media",
+        "💰 Provide loyalty points bonus for return",
+        "📊 Survey to understand why they left"
+    ],
+    2: [
+        "👑 VIP tier with exclusive benefits",
+        "💎 Premium customer service priority",
+        "🎪 Exclusive event invitations",
+        "💰 Upsell premium products",
+        "🎁 Surprise gifts and personalized offers",
+        "📢 Brand ambassador program invitation"
     ],
     3: [
-        "👑 VIP tier with exclusive benefits",
-        "💎 Premium customer service",
-        "🎪 Exclusive event invitations",
-        "💰 Upsell premium products"
+        "⏰ Send reminder emails about new arrivals",
+        "🎯 Personalized product recommendations",
+        "🔔 Re-engage with limited-time offers",
+        "💝 First purchase anniversary celebration",
+        "📊 Survey to understand their needs"
     ]
+}
+
+# Realistic input ranges based on Olist training data (in PHP)
+# Olist data: Recency 1-400 days, Frequency 1-10, Monetary R$50-R$5000
+# Converting to PHP: R$1 ≈ ₱10.5
+INPUT_LIMITS = {
+    'recency': {'min': 1, 'max': 400, 'unit': 'days'},
+    'frequency': {'min': 1, 'max': 10, 'unit': 'purchases'},
+    'monetary': {'min': 500, 'max': 50000, 'unit': 'PHP'}  # ~R$50 to ~R$5000
 }
 
 
@@ -92,7 +138,9 @@ def health_check():
         'status': 'healthy',
         'models_loaded': {
             'kmeans': kmeans_model is not None,
-            'prophet': prophet_model is not None
+            'prophet': prophet_model is not None,
+            'xgboost': xgboost_model is not None,
+            'rfm_scaler': rfm_scaler is not None
         },
         'timestamp': datetime.now().isoformat()
     })
@@ -105,9 +153,9 @@ def predict_customer_segment():
     
     Expected JSON payload:
     {
-        "recency": float,
-        "frequency": float,
-        "monetary": float
+        "recency": float (days since last purchase, 1-365),
+        "frequency": float (number of purchases, 1-50),
+        "monetary": float (total spending in PHP, 500-750000)
     }
     
     Returns:
@@ -116,7 +164,8 @@ def predict_customer_segment():
         "cluster_name": str,
         "description": str,
         "recommendations": list,
-        "rfm_values": dict
+        "rfm_values": dict (in PHP),
+        "confidence": dict
     }
     """
     try:
@@ -133,18 +182,21 @@ def predict_customer_segment():
         
         recency = float(data['recency'])
         frequency = float(data['frequency'])
-        monetary = float(data['monetary'])
+        monetary_php = float(data['monetary'])
         
-        # Input validation - reasonable business limits
-        if recency < 0 or recency > 1000:
-            return jsonify({'error': 'Recency must be between 0 and 1000 days'}), 400
-        if frequency < 1 or frequency > 1000:
-            return jsonify({'error': 'Frequency must be between 1 and 1000 purchases'}), 400
-        if monetary <= 0 or monetary > 1000000:
-            return jsonify({'error': 'Monetary must be between £0.01 and £1,000,000'}), 400
+        # Input validation - realistic business limits based on training data
+        if recency < INPUT_LIMITS['recency']['min'] or recency > INPUT_LIMITS['recency']['max']:
+            return jsonify({'error': f"Recency must be between {INPUT_LIMITS['recency']['min']} and {INPUT_LIMITS['recency']['max']} days"}), 400
+        if frequency < INPUT_LIMITS['frequency']['min'] or frequency > INPUT_LIMITS['frequency']['max']:
+            return jsonify({'error': f"Frequency must be between {INPUT_LIMITS['frequency']['min']} and {INPUT_LIMITS['frequency']['max']} purchases"}), 400
+        if monetary_php < INPUT_LIMITS['monetary']['min'] or monetary_php > INPUT_LIMITS['monetary']['max']:
+            return jsonify({'error': f"Monetary must be between ₱{INPUT_LIMITS['monetary']['min']:,} and ₱{INPUT_LIMITS['monetary']['max']:,}"}), 400
+        
+        # Convert PHP to BRL for model (model was trained on BRL)
+        monetary_brl = monetary_php / BRL_TO_PHP
         
         # Create input array and scale it
-        X = np.array([[recency, frequency, monetary]])
+        X = np.array([[recency, frequency, monetary_brl]])
         
         # Scale the input using the same scaler from training
         if rfm_scaler is None:
@@ -155,7 +207,33 @@ def predict_customer_segment():
         # Predict cluster on scaled data
         cluster = int(kmeans_model.predict(X_scaled)[0])
         
-        # Prepare response
+        # Calculate confidence level based on distance to cluster centroid
+        # Get distances to all cluster centroids
+        centroids = kmeans_model.cluster_centers_
+        distances = cdist(X_scaled, centroids, metric='euclidean')[0]
+        
+        # Distance to assigned cluster centroid
+        assigned_distance = distances[cluster]
+        
+        # Calculate confidence: closer to centroid = higher confidence
+        # Using softmax-like approach: confidence based on inverse distance
+        inv_distances = 1 / (distances + 1e-10)  # Avoid division by zero
+        confidence_scores = inv_distances / inv_distances.sum()
+        confidence = float(confidence_scores[cluster] * 100)
+        
+        # Also calculate silhouette-like score for this point
+        # (distance to nearest other cluster vs distance to own cluster)
+        other_distances = np.delete(distances, cluster)
+        nearest_other = other_distances.min() if len(other_distances) > 0 else assigned_distance
+        silhouette_score = (nearest_other - assigned_distance) / max(nearest_other, assigned_distance)
+        
+        # Convert silhouette to percentage (range -1 to 1 -> 0% to 100%)
+        silhouette_confidence = float((silhouette_score + 1) / 2 * 100)
+        
+        # Combined confidence (average of both methods)
+        combined_confidence = (confidence + silhouette_confidence) / 2
+        
+        # Prepare response (monetary shown in PHP)
         response = {
             'cluster': cluster,
             'cluster_name': CLUSTER_NAMES.get(cluster, f'Cluster {cluster}'),
@@ -163,9 +241,27 @@ def predict_customer_segment():
             'recommendations': CLUSTER_RECOMMENDATIONS.get(cluster, []),
             'rfm_values': {
                 'recency': recency,
+                'recency_unit': 'days',
                 'frequency': frequency,
-                'monetary': monetary
+                'frequency_unit': 'purchases',
+                'monetary': monetary_php,
+                'monetary_unit': 'PHP',
+                'monetary_brl': round(monetary_brl, 2)
             },
+            'confidence': {
+                'overall': round(combined_confidence, 2),
+                'centroid_proximity': round(confidence, 2),
+                'cluster_separation': round(silhouette_confidence, 2),
+                'distance_to_centroid': round(float(assigned_distance), 4)
+            },
+            'all_cluster_probabilities': {
+                CLUSTER_NAMES.get(i, f'Cluster {i}'): round(float(confidence_scores[i] * 100), 2)
+                for i in range(len(centroids))
+            },
+            'input_limits': INPUT_LIMITS,
+            'currency': 'PHP',
+            'model_currency': MODEL_CURRENCY,
+            'exchange_rate': f'1 BRL = {BRL_TO_PHP} PHP',
             'timestamp': datetime.now().isoformat()
         }
         
@@ -180,79 +276,211 @@ def predict_customer_segment():
 @app.route('/predict/forecast', methods=['POST'])
 def predict_sales_forecast():
     """
-    Generate sales forecast using Prophet model
+    Generate sales forecast using Prophet, XGBoost, and Ensemble models
     
     Expected JSON payload:
     {
         "start_date": "YYYY-MM-DD" (optional, defaults to tomorrow),
-        "periods": int (number of days to forecast, default 7)
+        "periods": int (number of days to forecast, default 7),
+        "model": "prophet" | "xgboost" | "ensemble" (optional, default "ensemble")
     }
     
-    Returns:
-    {
-        "forecast": [
-            {
-                "ds": "YYYY-MM-DD",
-                "yhat": float,
-                "yhat_lower": float,
-                "yhat_upper": float
-            }
-        ],
-        "summary": {
-            "avg_daily_sales": float,
-            "total_projected": float,
-            "uncertainty_range": str
-        }
-    }
+    XGBoost requires historical data context. For simplicity, we use Prophet for
+    pure time-series forecasting and provide model confidence based on uncertainty intervals.
     """
     try:
-        if prophet_model is None:
-            return jsonify({'error': 'Prophet model not loaded'}), 500
-        
-        data = request.get_json()
+        data = request.get_json() or {}
         
         # Get parameters with defaults
         start_date = data.get('start_date', None)
         periods = int(data.get('periods', 7))
+        model_choice = data.get('model', 'prophet').lower()
         
         # Validate periods
         if periods < 1 or periods > 365:
             return jsonify({'error': 'Periods must be between 1 and 365'}), 400
         
+        # Validate model choice
+        valid_models = ['prophet', 'xgboost', 'ensemble']
+        if model_choice not in valid_models:
+            return jsonify({'error': f'Model must be one of: {valid_models}'}), 400
+        
         # Create future dataframe
         if start_date:
             try:
                 start_date = pd.to_datetime(start_date)
-            except:
+            except Exception:
                 return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
         else:
             start_date = pd.to_datetime('today') + timedelta(days=1)
         
-        # Generate future dates
+        # Generate future dates for display
         future_dates = pd.date_range(start=start_date, periods=periods, freq='D')
-        future_df = pd.DataFrame({'ds': future_dates})
         
-        # Make predictions
-        forecast = prophet_model.predict(future_df)
+        forecast_list = []
+        prophet_predictions = None
+        xgb_predictions = None
         
-        # Extract relevant columns and convert to list of dicts
-        forecast_data = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].copy()
-        forecast_data['ds'] = forecast_data['ds'].dt.strftime('%Y-%m-%d')
-        forecast_list = forecast_data.to_dict('records')
+        # Prophet predictions (always available if model loaded)
+        # Note: Prophet was trained on 2016-2018 Olist data, so we forecast relative to that period
+        # and map results back to requested dates
+        if prophet_model is not None and model_choice in ['prophet', 'ensemble']:
+            # Use dates relative to training data end (Jul 2018) for prediction
+            # This ensures Prophet uses its learned seasonal patterns correctly
+            training_end = pd.to_datetime('2018-07-30')  # Last date in Olist training data
+            prophet_future_dates = pd.date_range(start=training_end + timedelta(days=1), periods=periods, freq='D')
+            future_df = pd.DataFrame({'ds': prophet_future_dates})
+            prophet_forecast = prophet_model.predict(future_df)
+            
+            # Map back to requested dates and clip negative values
+            prophet_predictions = pd.DataFrame({
+                'ds': future_dates,  # Use requested dates for display
+                'yhat': prophet_forecast['yhat'].clip(lower=0).values,  # No negative sales
+                'yhat_lower': prophet_forecast['yhat_lower'].clip(lower=0).values,
+                'yhat_upper': prophet_forecast['yhat_upper'].clip(lower=0).values
+            })
+        
+        # XGBoost predictions (requires feature engineering)
+        if xgboost_model is not None and model_choice in ['xgboost', 'ensemble']:
+            # Create features for XGBoost
+            xgb_features = pd.DataFrame({'Date': future_dates})
+            xgb_features['DayOfWeek'] = xgb_features['Date'].dt.dayofweek
+            xgb_features['Month'] = xgb_features['Date'].dt.month
+            xgb_features['DayOfMonth'] = xgb_features['Date'].dt.day
+            xgb_features['WeekOfYear'] = xgb_features['Date'].dt.isocalendar().week.astype(int)
+            
+            # For lag and rolling features, we need to use reasonable defaults
+            # since we don't have historical data in this API call
+            # Using average values as placeholders (Olist dataset averages)
+            avg_daily_sales = 50000  # Reasonable average from Olist training data (R$)
+            
+            for lag in [1, 7, 14, 28]:
+                xgb_features[f'Lag_{lag}'] = avg_daily_sales
+            
+            for window in [7, 14, 30]:
+                xgb_features[f'Rolling_Mean_{window}'] = avg_daily_sales
+                xgb_features[f'Rolling_Std_{window}'] = avg_daily_sales * 0.3  # ~30% std
+            
+            # Get feature columns (exclude Date)
+            feature_cols = [c for c in xgb_features.columns if c != 'Date']
+            X_future = xgb_features[feature_cols]
+            
+            # Make predictions and clip negative values
+            xgb_pred = xgboost_model.predict(X_future)
+            xgb_pred = np.clip(xgb_pred, 0, None)  # No negative sales
+            
+            xgb_predictions = pd.DataFrame({
+                'ds': future_dates,
+                'yhat': xgb_pred,
+                # XGBoost doesn't have native uncertainty, estimate as ±15%
+                'yhat_lower': xgb_pred * 0.85,
+                'yhat_upper': xgb_pred * 1.15
+            })
+        
+        # Prepare forecast based on model choice
+        if model_choice == 'prophet':
+            if prophet_predictions is None:
+                return jsonify({'error': 'Prophet model not loaded'}), 500
+            forecast_df = prophet_predictions
+            model_used = 'Prophet'
+            
+        elif model_choice == 'xgboost':
+            if xgb_predictions is None:
+                return jsonify({'error': 'XGBoost model not loaded'}), 500
+            forecast_df = xgb_predictions
+            model_used = 'XGBoost'
+            
+        else:  # ensemble
+            if prophet_predictions is None and xgb_predictions is None:
+                return jsonify({'error': 'No forecasting models available'}), 500
+            elif prophet_predictions is None:
+                forecast_df = xgb_predictions
+                model_used = 'XGBoost (Prophet unavailable)'
+            elif xgb_predictions is None:
+                forecast_df = prophet_predictions
+                model_used = 'Prophet (XGBoost unavailable)'
+            else:
+                # Weighted ensemble (Prophet 60%, XGBoost 40% based on typical MAPE performance)
+                w_prophet = 0.6
+                w_xgb = 0.4
+                
+                ensemble_yhat = w_prophet * prophet_predictions['yhat'].values + w_xgb * xgb_predictions['yhat'].values
+                ensemble_lower = w_prophet * prophet_predictions['yhat_lower'].values + w_xgb * xgb_predictions['yhat_lower'].values
+                ensemble_upper = w_prophet * prophet_predictions['yhat_upper'].values + w_xgb * xgb_predictions['yhat_upper'].values
+                
+                # Clip negative values
+                ensemble_yhat = np.clip(ensemble_yhat, 0, None)
+                ensemble_lower = np.clip(ensemble_lower, 0, None)
+                ensemble_upper = np.clip(ensemble_upper, 0, None)
+                
+                forecast_df = pd.DataFrame({
+                    'ds': future_dates,
+                    'yhat': ensemble_yhat,
+                    'yhat_lower': ensemble_lower,
+                    'yhat_upper': ensemble_upper
+                })
+                model_used = f'Ensemble (Prophet {w_prophet:.0%} + XGBoost {w_xgb:.0%})'
+        
+        # Convert to list of dicts with confidence metrics
+        for idx, row in forecast_df.iterrows():
+            ds = row['ds']
+            if hasattr(ds, 'strftime'):
+                ds_str = ds.strftime('%Y-%m-%d')
+            else:
+                ds_str = str(ds)
+            
+            yhat = float(row['yhat'])
+            yhat_lower = float(row['yhat_lower'])
+            yhat_upper = float(row['yhat_upper'])
+            
+            # Ensure non-negative values
+            yhat = max(0, yhat)
+            yhat_lower = max(0, yhat_lower)
+            yhat_upper = max(0, yhat_upper)
+            
+            # Calculate confidence based on prediction interval width
+            interval_width = yhat_upper - yhat_lower
+            if yhat > 0:
+                relative_uncertainty = (interval_width / yhat) * 100
+            else:
+                relative_uncertainty = 100  # Maximum uncertainty if prediction is 0
+            
+            # Confidence: narrower interval = higher confidence (capped at 95%, min 10%)
+            # If relative uncertainty is 10%, confidence is 90%; if 50%, confidence is 50%
+            confidence = max(10, min(95, 100 - relative_uncertainty))
+            
+            forecast_list.append({
+                'ds': ds_str,
+                'yhat': round(yhat, 2),
+                'yhat_lower': round(yhat_lower, 2),
+                'yhat_upper': round(yhat_upper, 2),
+                'confidence': round(confidence, 2),
+                'uncertainty_pct': round(relative_uncertainty, 2)
+            })
         
         # Calculate summary statistics
-        avg_sales = float(forecast['yhat'].mean())
-        total_projected = float(forecast['yhat'].sum())
-        avg_uncertainty = float(((forecast['yhat_upper'] - forecast['yhat_lower']) / forecast['yhat']).mean() * 100)
+        yhats = [f['yhat'] for f in forecast_list]
+        confidences = [f['confidence'] for f in forecast_list]
+        
+        avg_sales = sum(yhats) / len(yhats)
+        total_projected = sum(yhats)
+        avg_confidence = sum(confidences) / len(confidences)
+        avg_uncertainty = sum([f['uncertainty_pct'] for f in forecast_list]) / len(forecast_list)
         
         response = {
             'forecast': forecast_list,
+            'model_used': model_used,
             'summary': {
-                'avg_daily_sales': avg_sales,
-                'total_projected': total_projected,
+                'avg_daily_sales': round(avg_sales, 2),
+                'total_projected': round(total_projected, 2),
+                'avg_confidence': round(avg_confidence, 2),
                 'uncertainty_range': f'±{avg_uncertainty:.1f}%',
                 'periods': periods,
                 'start_date': start_date.strftime('%Y-%m-%d')
+            },
+            'models_available': {
+                'prophet': prophet_model is not None,
+                'xgboost': xgboost_model is not None
             },
             'timestamp': datetime.now().isoformat()
         }
@@ -269,20 +497,45 @@ def predict_sales_forecast():
 def get_models_info():
     """Get information about loaded models"""
     try:
+        n_clusters = kmeans_model.n_clusters if kmeans_model is not None else 0
+        
         info = {
             'kmeans_model': {
                 'loaded': kmeans_model is not None,
                 'path': KMEANS_MODEL_PATH,
-                'clusters': 4,
+                'clusters': n_clusters,
                 'features': ['recency', 'frequency', 'monetary'],
-                'cluster_names': CLUSTER_NAMES
+                'cluster_names': CLUSTER_NAMES,
+                'description': 'Customer segmentation using RFM analysis'
             },
             'prophet_model': {
                 'loaded': prophet_model is not None,
                 'path': PROPHET_MODEL_PATH,
                 'max_forecast_days': 365,
                 'features': ['date'],
-                'output': ['yhat', 'yhat_lower', 'yhat_upper']
+                'output': ['yhat', 'yhat_lower', 'yhat_upper'],
+                'description': 'Time-series forecasting with seasonality'
+            },
+            'xgboost_model': {
+                'loaded': xgboost_model is not None,
+                'path': XGBOOST_MODEL_PATH,
+                'max_forecast_days': 365,
+                'features': ['DayOfWeek', 'Month', 'DayOfMonth', 'WeekOfYear', 
+                            'Lag_1', 'Lag_7', 'Lag_14', 'Lag_28',
+                            'Rolling_Mean_7', 'Rolling_Mean_14', 'Rolling_Mean_30',
+                            'Rolling_Std_7', 'Rolling_Std_14', 'Rolling_Std_30'],
+                'output': ['yhat'],
+                'description': 'Gradient boosting with feature engineering'
+            },
+            'rfm_scaler': {
+                'loaded': rfm_scaler is not None,
+                'path': RFM_SCALER_PATH,
+                'description': 'StandardScaler for RFM normalization'
+            },
+            'ensemble': {
+                'available': prophet_model is not None and xgboost_model is not None,
+                'weights': {'prophet': 0.6, 'xgboost': 0.4},
+                'description': 'Weighted average of Prophet and XGBoost predictions'
             }
         }
         
@@ -293,14 +546,20 @@ def get_models_info():
 
 
 if __name__ == '__main__':
-    print("\n" + "="*60)
+    print("\n" + "="*70)
     print("🚀 E-commerce Analytics API Server")
-    print("="*60)
-    print(f"📊 API Base URL: http://localhost:5000")
-    print(f"🔗 Health Check: http://localhost:5000/health")
-    print(f"🎯 Customer Segmentation: POST /predict/segment")
-    print(f"📈 Sales Forecast: POST /predict/forecast")
-    print(f"ℹ️  Model Info: GET /models/info")
-    print("="*60 + "\n")
+    print("="*70)
+    print(f"\n📊 API Base URL: http://localhost:5000")
+    print(f"\n🔗 Endpoints:")
+    print(f"   GET  /health           - Health check")
+    print(f"   GET  /models/info      - Model information")
+    print(f"   POST /predict/segment  - Customer segmentation (K-Means)")
+    print(f"   POST /predict/forecast - Sales forecast (Prophet/XGBoost/Ensemble)")
+    print(f"\n🤖 Models Loaded:")
+    print(f"   ✅ K-Means:  {kmeans_model is not None}")
+    print(f"   ✅ Prophet:  {prophet_model is not None}")
+    print(f"   ✅ XGBoost:  {xgboost_model is not None}")
+    print(f"   ✅ Scaler:   {rfm_scaler is not None}")
+    print("="*70 + "\n")
     
     app.run(debug=True, host='0.0.0.0', port=5000)
