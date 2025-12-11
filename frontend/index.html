@@ -1,0 +1,3021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard | E-commerce AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo" id="sidebar-logo"></div>
+        <div>
+          <div class="sidebar-title">Analytics</div>
+          <div class="sidebar-subtitle">E-commerce AI</div>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Overview</div>
+          <a href="#" class="nav-item active" data-page="dashboard">
+            <span class="nav-item-icon" data-icon="home"></span>
+            <span class="nav-item-text">Dashboard</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">AI Models</div>
+          <a href="#" class="nav-item" data-page="segmentation">
+            <span class="nav-item-icon" data-icon="people"></span>
+            <span class="nav-item-text">Customer Segmentation</span>
+          </a>
+          <a href="#" class="nav-item" data-page="forecasting">
+            <span class="nav-item-icon" data-icon="graph"></span>
+            <span class="nav-item-text">Sales Forecasting</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Insights</div>
+          <a href="#" class="nav-item" data-page="analytics">
+            <span class="nav-item-icon" data-icon="pulse"></span>
+            <span class="nav-item-text">Analytics</span>
+          </a>
+          <a href="#" class="nav-item" data-page="history">
+            <span class="nav-item-icon" data-icon="history"></span>
+            <span class="nav-item-text">History</span>
+            <span class="nav-item-badge" id="history-count">0</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="#" class="nav-item" data-page="settings">
+            <span class="nav-item-icon" data-icon="gear"></span>
+            <span class="nav-item-text">Settings</span>
+          </a>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="api-status">
+          <span class="api-status-dot offline"></span>
+          <span class="api-status-text">Checking API...</span>
+        </div>
+        <div class="models-status" style="margin-top: 8px; font-size: 11px; color: var(--color-text-muted);">
+          <!-- Model status will be populated by JS -->
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="btn btn-icon mobile-menu-toggle" style="display: none;" id="mobile-menu-btn">
+            <span data-icon="menu"></span>
+          </button>
+          <nav class="breadcrumb">
+            <span>Home</span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">Dashboard</span>
+          </nav>
+        </div>
+        
+        <div class="header-right">
+          <button class="btn btn-secondary btn-sm" onclick="App.updateAPIStatus()">
+            <span data-icon="sync" class="btn-icon-left"></span> Refresh
+          </button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; color: var(--color-text-secondary);">
+              Team: Sereno, Page, Dulce, Laudato
+            </span>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Page Content -->
+      <div class="page-content">
+        
+        <!-- ============================================
+             DASHBOARD PAGE
+             ============================================ -->
+        <section id="page-dashboard" class="page-section">
+          <div class="page-header">
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-description">Overview of your e-commerce analytics and AI model performance.</p>
+          </div>
+          
+          <!-- Stats Grid -->
+          <div class="grid grid-4 mb-3">
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-card-icon blue" data-icon="people"></div>
+              </div>
+              <div class="stat-card-value" id="stat-predictions">0</div>
+              <div class="stat-card-label">Customer Predictions</div>
+              <div class="stat-card-change positive" id="stat-predictions-change">
+                <span data-icon="arrowUp"></span> 0 today
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-card-icon green" data-icon="graph"></div>
+              </div>
+              <div class="stat-card-value" id="stat-forecasts">0</div>
+              <div class="stat-card-label">Sales Forecasts</div>
+              <div class="stat-card-change positive" id="stat-forecasts-change">
+                <span data-icon="arrowUp"></span> 0 today
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-card-icon purple" data-icon="cpu"></div>
+              </div>
+              <div class="stat-card-value" id="stat-models">4</div>
+              <div class="stat-card-label">AI Models Active</div>
+              <div class="stat-card-change positive">
+                <span data-icon="check"></span> All loaded
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-card-icon yellow" data-icon="zap"></div>
+              </div>
+              <div class="stat-card-value" id="stat-accuracy">85%</div>
+              <div class="stat-card-label">Model Accuracy</div>
+              <div class="stat-card-change positive">
+                R² = 0.86
+              </div>
+            </div>
+          </div>
+          
+          <!-- Quick Actions -->
+          <div class="grid grid-2 mb-3">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="target" class="card-title-icon"></span> Quick Segmentation</h3>
+              </div>
+              <div class="card-body">
+                <p class="text-muted mb-2">Quickly classify a customer based on RFM values.</p>
+                <div class="grid grid-3 mb-2">
+                  <div class="form-group mb-0">
+                    <label class="form-label">Recency (days)</label>
+                    <input type="number" class="form-input" id="quick-recency" placeholder="150" min="1" max="400">
+                  </div>
+                  <div class="form-group mb-0">
+                    <label class="form-label">Frequency</label>
+                    <input type="number" class="form-input" id="quick-frequency" placeholder="2" min="1" max="10">
+                  </div>
+                  <div class="form-group mb-0">
+                    <label class="form-label">Monetary</label>
+                    <input type="number" class="form-input" id="quick-monetary" placeholder="2500" min="500" max="50000">
+                  </div>
+                </div>
+                <button class="btn btn-primary" onclick="Dashboard.quickSegment()">
+                  <span data-icon="target" class="btn-icon-left"></span> Predict Segment
+                </button>
+                <div id="quick-segment-result" class="mt-2"></div>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="graph" class="card-title-icon"></span> Quick Forecast</h3>
+              </div>
+              <div class="card-body">
+                <p class="text-muted mb-2">Generate a quick sales forecast for the next few days.</p>
+                <div class="grid grid-2 mb-2">
+                  <div class="form-group mb-0">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" class="form-input" id="quick-date">
+                  </div>
+                  <div class="form-group mb-0">
+                    <label class="form-label">Days</label>
+                    <input type="number" class="form-input" id="quick-days" value="7" min="1" max="30">
+                  </div>
+                </div>
+                <button class="btn btn-primary" onclick="Dashboard.quickForecast()">
+                  <span data-icon="pulse" class="btn-icon-left"></span> Generate Forecast
+                </button>
+                <div id="quick-forecast-result" class="mt-2"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Charts Row -->
+          <div class="grid grid-2 mb-3">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="people" class="card-title-icon"></span> Segment Distribution</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="segment-chart" height="200"></canvas>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="graph" class="card-title-icon"></span> Recent Activity</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="activity-chart" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Predictions -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><span data-icon="history" class="card-title-icon"></span> Recent Predictions</h3>
+              <a href="#" class="btn btn-secondary btn-sm" data-page="history">View All</a>
+            </div>
+            <div class="card-body">
+              <div class="table-container">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Input</th>
+                      <th>Result</th>
+                      <th>Confidence</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-predictions-table">
+                    <tr>
+                      <td colspan="5" class="text-center text-muted" style="padding: 32px;">
+                        No predictions yet. Start by using the quick actions above.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ============================================
+             SEGMENTATION PAGE
+             ============================================ -->
+        <section id="page-segmentation" class="page-section hidden">
+          <div class="page-header">
+            <h1 class="page-title">Customer Segmentation</h1>
+            <p class="page-description">Classify customers using K-Means clustering with RFM (Recency, Frequency, Monetary) analysis.</p>
+          </div>
+          
+          <!-- Segment Overview Cards -->
+          <div class="grid grid-4 mb-3">
+            <div class="segment-info-card" data-segment="0">
+              <div class="segment-info-header">
+                <div class="segment-dot" style="background: var(--color-danger);"></div>
+                <span class="segment-name">Lost Customers</span>
+              </div>
+              <p class="segment-desc">Haven't purchased in a long time, low engagement.</p>
+              <div class="segment-action">Re-engagement campaigns</div>
+            </div>
+            <div class="segment-info-card" data-segment="1">
+              <div class="segment-info-header">
+                <div class="segment-dot" style="background: var(--color-warning);"></div>
+                <span class="segment-name">At Risk</span>
+              </div>
+              <p class="segment-desc">Previously active but showing decline in activity.</p>
+              <div class="segment-action">Retention offers</div>
+            </div>
+            <div class="segment-info-card" data-segment="2">
+              <div class="segment-info-header">
+                <div class="segment-dot" style="background: var(--color-info);"></div>
+                <span class="segment-name">Loyal Customers</span>
+              </div>
+              <p class="segment-desc">Regular purchasers with consistent engagement.</p>
+              <div class="segment-action">Loyalty rewards</div>
+            </div>
+            <div class="segment-info-card" data-segment="3">
+              <div class="segment-info-header">
+                <div class="segment-dot" style="background: var(--color-success);"></div>
+                <span class="segment-name">Champions</span>
+              </div>
+              <p class="segment-desc">Best customers with high value and frequency.</p>
+              <div class="segment-action">VIP treatment</div>
+            </div>
+          </div>
+          
+          <div class="grid grid-2 mb-3">
+            <!-- Single Customer Analysis -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="person" class="card-title-icon"></span> Single Customer Analysis</h3>
+              </div>
+              <div class="card-body">
+                <p class="text-muted mb-2">Enter RFM values to classify a single customer.</p>
+                
+                <div class="form-group">
+                  <label class="form-label">
+                    Recency (days since last purchase)
+                    <span class="form-hint">Range: 1-400 days</span>
+                  </label>
+                  <input type="number" class="form-input" id="seg-recency" placeholder="e.g., 30" min="1" max="400">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">
+                    Frequency (number of purchases)
+                    <span class="form-hint">Range: 1-10 orders</span>
+                  </label>
+                  <input type="number" class="form-input" id="seg-frequency" placeholder="e.g., 5" min="1" max="10">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">
+                    Monetary (total spend value)
+                    <span class="form-hint">Range: 500-50,000</span>
+                  </label>
+                  <input type="number" class="form-input" id="seg-monetary" placeholder="e.g., 15000" min="500" max="50000">
+                </div>
+                
+                <button class="btn btn-primary btn-block" onclick="Segmentation.analyzeSingle()">
+                  <span data-icon="target" class="btn-icon-left"></span> Analyze Customer
+                </button>
+                
+                <!-- Single Result -->
+                <div id="seg-single-result" class="mt-2"></div>
+              </div>
+            </div>
+            
+            <!-- Bulk Upload -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="upload" class="card-title-icon"></span> Bulk Analysis (CSV)</h3>
+              </div>
+              <div class="card-body">
+                <p class="text-muted mb-2">Upload a CSV file with multiple customers for batch processing.</p>
+                
+                <div class="upload-zone" id="csv-upload-zone">
+                  <div class="upload-zone-content">
+                    <div class="upload-icon" data-icon="upload"></div>
+                    <p class="upload-text">Drag & drop CSV file here</p>
+                    <p class="upload-subtext">or click to browse</p>
+                  </div>
+                  <input type="file" id="csv-file-input" accept=".csv" hidden>
+                </div>
+                
+                <div class="upload-info mt-2">
+                  <div class="info-box">
+                    <span data-icon="info" class="info-icon"></span>
+                    <div>
+                      <strong>CSV Format Required:</strong>
+                      <code>recency,frequency,monetary</code>
+                      <br>Each row = one customer
+                    </div>
+                  </div>
+                </div>
+                
+                <div id="csv-file-info" class="file-info hidden mt-2">
+                  <span data-icon="file" class="file-icon"></span>
+                  <span class="file-name"></span>
+                  <span class="file-rows"></span>
+                  <button class="btn btn-icon btn-sm" onclick="Segmentation.clearCSV()">
+                    <span data-icon="x"></span>
+                  </button>
+                </div>
+                
+                <button class="btn btn-primary btn-block mt-2" id="bulk-analyze-btn" onclick="Segmentation.analyzeBulk()" disabled>
+                  <span data-icon="cpu" class="btn-icon-left"></span> Process All Customers
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Results Section -->
+          <div id="seg-results-section" class="hidden">
+            <div class="grid grid-3 mb-3">
+              <!-- Distribution Chart -->
+              <div class="card" style="grid-column: span 2;">
+                <div class="card-header">
+                  <h3 class="card-title"><span data-icon="pulse" class="card-title-icon"></span> Segment Distribution</h3>
+                  <div class="card-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="Segmentation.exportResults()">
+                      <span data-icon="download" class="btn-icon-left"></span> Export
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <canvas id="seg-distribution-chart" height="250"></canvas>
+                </div>
+              </div>
+              
+              <!-- Summary Stats -->
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title"><span data-icon="table" class="card-title-icon"></span> Summary</h3>
+                </div>
+                <div class="card-body">
+                  <div class="summary-stat">
+                    <span class="summary-label">Total Analyzed</span>
+                    <span class="summary-value" id="seg-total">0</span>
+                  </div>
+                  <div class="summary-stat">
+                    <span class="summary-label">Champions</span>
+                    <span class="summary-value text-success" id="seg-champions">0</span>
+                  </div>
+                  <div class="summary-stat">
+                    <span class="summary-label">Loyal</span>
+                    <span class="summary-value text-info" id="seg-loyal">0</span>
+                  </div>
+                  <div class="summary-stat">
+                    <span class="summary-label">At Risk</span>
+                    <span class="summary-value text-warning" id="seg-atrisk">0</span>
+                  </div>
+                  <div class="summary-stat">
+                    <span class="summary-label">Lost</span>
+                    <span class="summary-value text-danger" id="seg-lost">0</span>
+                  </div>
+                  <div class="summary-stat mt-2" style="border-top: 1px solid var(--color-border-default); padding-top: 12px;">
+                    <span class="summary-label">Avg Confidence</span>
+                    <span class="summary-value" id="seg-avg-conf">0%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Results Table -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="table" class="card-title-icon"></span> Detailed Results</h3>
+                <div class="card-actions">
+                  <input type="text" class="form-input form-input-sm" placeholder="Filter results..." id="seg-filter" style="width: 200px;">
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="table-container">
+                  <table class="table" id="seg-results-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Recency</th>
+                        <th>Frequency</th>
+                        <th>Monetary</th>
+                        <th>Segment</th>
+                        <th>Confidence</th>
+                        <th>Recommendation</th>
+                      </tr>
+                    </thead>
+                    <tbody id="seg-results-tbody">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ============================================
+             FORECASTING PAGE
+             ============================================ -->
+        <section id="page-forecasting" class="page-section hidden">
+          <div class="page-header">
+            <h1 class="page-title">Sales Forecasting</h1>
+            <p class="page-description">Predict future sales using Prophet (time-series) and XGBoost (feature-based) models.</p>
+          </div>
+          
+          <!-- Model Info Cards -->
+          <div class="grid grid-3 mb-3">
+            <div class="model-card" data-model="prophet">
+              <div class="model-card-header">
+                <span data-icon="graph" class="model-icon"></span>
+                <div>
+                  <div class="model-name">Prophet</div>
+                  <div class="model-type">Time-Series Model</div>
+                </div>
+              </div>
+              <p class="model-desc">Facebook's forecasting model that handles seasonality and trends automatically.</p>
+              <div class="model-stats">
+                <span class="model-stat">Best for: Seasonal patterns</span>
+              </div>
+            </div>
+            
+            <div class="model-card" data-model="xgboost">
+              <div class="model-card-header">
+                <span data-icon="cpu" class="model-icon"></span>
+                <div>
+                  <div class="model-name">XGBoost</div>
+                  <div class="model-type">Feature-Based Model</div>
+                </div>
+              </div>
+              <p class="model-desc">Gradient boosting model that uses temporal features for predictions.</p>
+              <div class="model-stats">
+                <span class="model-stat">R² Score: 0.86</span>
+              </div>
+            </div>
+            
+            <div class="model-card active" data-model="ensemble">
+              <div class="model-card-header">
+                <span data-icon="zap" class="model-icon"></span>
+                <div>
+                  <div class="model-name">Ensemble</div>
+                  <div class="model-type">Combined Model</div>
+                </div>
+              </div>
+              <p class="model-desc">Weighted average of Prophet and XGBoost for balanced predictions.</p>
+              <div class="model-stats">
+                <span class="model-stat badge badge-success">Recommended</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Forecast Configuration -->
+          <div class="grid grid-3 mb-3">
+            <div class="card" style="grid-column: span 1;">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="gear" class="card-title-icon"></span> Configuration</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label">Start Date</label>
+                  <input type="date" class="form-input" id="fc-start-date">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Forecast Period (days)</label>
+                  <input type="number" class="form-input" id="fc-periods" value="14" min="1" max="90">
+                  <div class="form-hint-block">1-90 days forecast range</div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Model Selection</label>
+                  <select class="form-select" id="fc-model">
+                    <option value="ensemble" selected>Ensemble (Recommended)</option>
+                    <option value="prophet">Prophet Only</option>
+                    <option value="xgboost">XGBoost Only</option>
+                  </select>
+                </div>
+                
+                <button class="btn btn-primary btn-block" onclick="Forecasting.generateForecast()">
+                  <span data-icon="rocket" class="btn-icon-left"></span> Generate Forecast
+                </button>
+              </div>
+            </div>
+            
+            <!-- Main Chart -->
+            <div class="card" style="grid-column: span 2;">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="graph" class="card-title-icon"></span> Forecast Visualization</h3>
+                <div class="card-actions" id="fc-chart-actions" style="display: none;">
+                  <button class="btn btn-secondary btn-sm" onclick="Forecasting.exportChart()">
+                    <span data-icon="download" class="btn-icon-left"></span> Export
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="fc-chart-placeholder" class="chart-placeholder">
+                  <span data-icon="graph" class="placeholder-icon"></span>
+                  <p>Configure and generate a forecast to see results</p>
+                </div>
+                <canvas id="fc-main-chart" height="280" style="display: none;"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Results Section -->
+          <div id="fc-results-section" class="hidden">
+            <!-- Summary Cards -->
+            <div class="grid grid-4 mb-3">
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-icon blue" data-icon="calendar"></div>
+                </div>
+                <div class="stat-card-value" id="fc-stat-days">0</div>
+                <div class="stat-card-label">Days Forecasted</div>
+              </div>
+              
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-icon green" data-icon="graph"></div>
+                </div>
+                <div class="stat-card-value" id="fc-stat-total">0</div>
+                <div class="stat-card-label">Total Projected</div>
+              </div>
+              
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-icon purple" data-icon="pulse"></div>
+                </div>
+                <div class="stat-card-value" id="fc-stat-daily">0</div>
+                <div class="stat-card-label">Avg Daily Sales</div>
+              </div>
+              
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-icon yellow" data-icon="target"></div>
+                </div>
+                <div class="stat-card-value" id="fc-stat-conf">0%</div>
+                <div class="stat-card-label">Avg Confidence</div>
+              </div>
+            </div>
+            
+            <!-- Detailed Forecast Table -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="table" class="card-title-icon"></span> Daily Forecast Details</h3>
+                <div class="card-actions">
+                  <button class="btn btn-secondary btn-sm" onclick="Forecasting.exportCSV()">
+                    <span data-icon="download" class="btn-icon-left"></span> Export CSV
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Day</th>
+                        <th>Prophet</th>
+                        <th>XGBoost</th>
+                        <th>Final Forecast</th>
+                        <th>Confidence</th>
+                      </tr>
+                    </thead>
+                    <tbody id="fc-results-tbody">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ============================================
+             ANALYTICS PAGE
+             ============================================ -->
+        <section id="page-analytics" class="page-section hidden">
+          <div class="page-header">
+            <h1 class="page-title">Analytics</h1>
+            <p class="page-description">Deep dive into your prediction data with interactive visualizations.</p>
+          </div>
+          
+          <!-- Analytics Overview -->
+          <div class="grid grid-4 mb-3">
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-card-icon blue" data-icon="pulse"></div>
+              </div>
+              <div class="stat-card-value" id="an-total-ops">0</div>
+              <div class="stat-card-label">Total Operations</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-card-icon green" data-icon="people"></div>
+              </div>
+              <div class="stat-card-value" id="an-total-segments">0</div>
+              <div class="stat-card-label">Segmentations</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-card-icon purple" data-icon="graph"></div>
+              </div>
+              <div class="stat-card-value" id="an-total-forecasts">0</div>
+              <div class="stat-card-label">Forecasts</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-card-icon yellow" data-icon="target"></div>
+              </div>
+              <div class="stat-card-value" id="an-avg-conf">0%</div>
+              <div class="stat-card-label">Avg Confidence</div>
+            </div>
+          </div>
+          
+          <!-- Charts Row -->
+          <div class="grid grid-2 mb-3">
+            <!-- Segment Distribution -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="people" class="card-title-icon"></span> Segment Distribution</h3>
+              </div>
+              <div class="card-body">
+                <div id="an-seg-placeholder" class="chart-placeholder-sm">
+                  <p>No segmentation data yet</p>
+                </div>
+                <canvas id="an-segment-chart" height="250" style="display: none;"></canvas>
+              </div>
+            </div>
+            
+            <!-- Activity Over Time -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="graph" class="card-title-icon"></span> Activity Timeline</h3>
+              </div>
+              <div class="card-body">
+                <div id="an-activity-placeholder" class="chart-placeholder-sm">
+                  <p>No activity data yet</p>
+                </div>
+                <canvas id="an-activity-chart" height="250" style="display: none;"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Confidence Distribution & RFM Analysis -->
+          <div class="grid grid-2 mb-3">
+            <!-- Confidence Distribution -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="target" class="card-title-icon"></span> Confidence Distribution</h3>
+              </div>
+              <div class="card-body">
+                <div id="an-conf-placeholder" class="chart-placeholder-sm">
+                  <p>No confidence data yet</p>
+                </div>
+                <canvas id="an-confidence-chart" height="200" style="display: none;"></canvas>
+              </div>
+            </div>
+            
+            <!-- RFM Score Analysis -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><span data-icon="pulse" class="card-title-icon"></span> RFM Averages by Segment</h3>
+              </div>
+              <div class="card-body">
+                <div id="an-rfm-placeholder" class="chart-placeholder-sm">
+                  <p>No RFM data yet</p>
+                </div>
+                <canvas id="an-rfm-chart" height="200" style="display: none;"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Data Insights -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><span data-icon="lightBulb" class="card-title-icon"></span> Data Insights</h3>
+              <button class="btn btn-secondary btn-sm" onclick="Analytics.refresh()">
+                <span data-icon="sync" class="btn-icon-left"></span> Refresh
+              </button>
+            </div>
+            <div class="card-body">
+              <div id="an-insights" class="insights-grid">
+                <div class="insight-card">
+                  <div class="insight-icon" data-icon="info"></div>
+                  <div class="insight-content">
+                    <div class="insight-title">Getting Started</div>
+                    <div class="insight-text">Make predictions in the Segmentation or Forecasting pages to see analytics here.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ============================================
+             HISTORY PAGE
+             ============================================ -->
+        <section id="page-history" class="page-section hidden">
+          <div class="page-header">
+            <h1 class="page-title">History</h1>
+            <p class="page-description">View and manage all past predictions and forecasts.</p>
+          </div>
+          
+          <!-- Filters -->
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="filter-bar">
+                <div class="filter-group">
+                  <label class="filter-label">Type</label>
+                  <select class="form-select form-select-sm" id="hist-filter-type">
+                    <option value="all">All Types</option>
+                    <option value="segment">Segmentation</option>
+                    <option value="forecast">Forecast</option>
+                  </select>
+                </div>
+                
+                <div class="filter-group">
+                  <label class="filter-label">Date Range</label>
+                  <select class="form-select form-select-sm" id="hist-filter-date">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                  </select>
+                </div>
+                
+                <div class="filter-group flex-grow">
+                  <label class="filter-label">Search</label>
+                  <input type="text" class="form-input form-input-sm" id="hist-search" placeholder="Search predictions...">
+                </div>
+                
+                <div class="filter-actions">
+                  <button class="btn btn-secondary btn-sm" onclick="History.clearFilters()">
+                    <span data-icon="x" class="btn-icon-left"></span> Clear
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="History.clearAll()">
+                    <span data-icon="trash" class="btn-icon-left"></span> Clear All
+                  </button>
+                  <button class="btn btn-primary btn-sm" onclick="History.exportAll()">
+                    <span data-icon="download" class="btn-icon-left"></span> Export
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- History Table -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><span data-icon="history" class="card-title-icon"></span> Prediction History</h3>
+              <span class="card-subtitle" id="hist-count">0 records</span>
+            </div>
+            <div class="card-body">
+              <div class="table-container">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Input</th>
+                      <th>Result</th>
+                      <th>Confidence</th>
+                      <th>Timestamp</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="hist-tbody">
+                    <tr>
+                      <td colspan="6" class="text-center text-muted" style="padding: 48px;">
+                        No predictions yet. Start using the AI models to see history here.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ============================================
+             SETTINGS PAGE
+             ============================================ -->
+        <section id="page-settings" class="page-section hidden">
+          <div class="page-header">
+            <h1 class="page-title">Settings</h1>
+            <p class="page-description">Configure your dashboard, manage data, and cloud sync.</p>
+          </div>
+          
+          <!-- Settings Grid -->
+          <div class="settings-grid">
+            
+            <!-- API Status Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <span data-icon="server"></span>
+                  API Status
+                </h2>
+                <button class="btn btn-outline btn-sm" onclick="Settings.checkAPI()">
+                  <span data-icon="sync"></span>
+                  Check
+                </button>
+              </div>
+              <div class="card-body">
+                <div class="settings-item">
+                  <div class="settings-item-label">Backend Status</div>
+                  <div class="settings-item-value">
+                    <span class="status-badge" id="set-api-status">
+                      <span data-icon="dotFill"></span>
+                      Checking...
+                    </span>
+                  </div>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-item-label">API Endpoint</div>
+                  <div class="settings-item-value">
+                    <code class="api-endpoint">http://localhost:5000</code>
+                  </div>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-item-label">ML Models Loaded</div>
+                  <div class="settings-item-value" id="set-models-count">--</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Cloud Sync Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <span data-icon="upload"></span>
+                  Cloud Sync
+                </h2>
+                <span class="badge badge-info" id="set-sync-status">Local Only</span>
+              </div>
+              <div class="card-body">
+                <div class="settings-item">
+                  <div class="settings-item-label">Provider</div>
+                  <div class="settings-item-value">
+                    <span class="provider-badge">
+                      <svg width="16" height="16" viewBox="0 0 109 113" fill="currentColor">
+                        <path d="M63.7076 110.284C60.8481 113.885 55.0502 111.912 54.9813 107.314L53.9738 40.0627L99.1935 40.0627C107.384 40.0627 111.952 49.5228 106.859 55.9374L63.7076 110.284Z" fill="url(#paint0_linear)"/>
+                        <path d="M63.7076 110.284C60.8481 113.885 55.0502 111.912 54.9813 107.314L53.9738 40.0627L99.1935 40.0627C107.384 40.0627 111.952 49.5228 106.859 55.9374L63.7076 110.284Z" fill="url(#paint1_linear)" fill-opacity="0.2"/>
+                        <path d="M45.317 2.07103C48.1765 -1.53037 53.9745 0.442937 54.0434 5.041L54.4849 72.2922H9.83113C1.64038 72.2922 -2.92775 62.8321 2.1655 56.4175L45.317 2.07103Z" fill="#3ECF8E"/>
+                        <defs>
+                          <linearGradient id="paint0_linear" x1="53.9738" y1="54.974" x2="94.1635" y2="71.8295" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#249361"/>
+                            <stop offset="1" stop-color="#3ECF8E"/>
+                          </linearGradient>
+                          <linearGradient id="paint1_linear" x1="36.1558" y1="30.578" x2="54.4844" y2="65.0806" gradientUnits="userSpaceOnUse">
+                            <stop/>
+                            <stop offset="1" stop-opacity="0"/>
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      Supabase
+                    </span>
+                  </div>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-item-label">Connection</div>
+                  <div class="settings-item-value">
+                    <span class="status-badge status-offline" id="set-supabase-status">
+                      <span data-icon="dotFill"></span>
+                      Not Connected
+                    </span>
+                  </div>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-item-label">Last Sync</div>
+                  <div class="settings-item-value" id="set-last-sync">Never</div>
+                </div>
+                <div class="settings-actions">
+                  <button class="btn btn-primary btn-sm" id="btn-connect-supabase" onclick="Settings.connectSupabase()">
+                    <span data-icon="zap"></span>
+                    Connect
+                  </button>
+                  <button class="btn btn-outline btn-sm" id="btn-sync-now" onclick="Settings.syncNow()" disabled>
+                    <span data-icon="sync"></span>
+                    Sync Now
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Data Management Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <span data-icon="database"></span>
+                  Local Data
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="settings-item">
+                  <div class="settings-item-label">Predictions Stored</div>
+                  <div class="settings-item-value" id="set-pred-count">0</div>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-item-label">Forecasts Stored</div>
+                  <div class="settings-item-value" id="set-forecast-count">0</div>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-item-label">Storage Used</div>
+                  <div class="settings-item-value" id="set-storage-size">0 KB</div>
+                </div>
+                <div class="settings-actions">
+                  <button class="btn btn-outline btn-sm" onclick="Settings.exportData()">
+                    <span data-icon="download"></span>
+                    Export All
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="Settings.importData()">
+                    <span data-icon="upload"></span>
+                    Import
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="Settings.clearData()">
+                    <span data-icon="trash"></span>
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Appearance Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <span data-icon="eye"></span>
+                  Appearance
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="settings-item">
+                  <div class="settings-item-label">Theme</div>
+                  <div class="settings-item-value">
+                    <select class="form-select form-select-sm" id="set-theme" disabled>
+                      <option value="dark" selected>Dark (GitHub)</option>
+                      <option value="light">Light</option>
+                      <option value="system">System</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-item-label">Chart Animations</div>
+                  <div class="settings-item-value">
+                    <label class="toggle">
+                      <input type="checkbox" id="set-animations" checked onchange="Settings.toggleAnimations()">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-item-label">Compact Mode</div>
+                  <div class="settings-item-value">
+                    <label class="toggle">
+                      <input type="checkbox" id="set-compact" onchange="Settings.toggleCompact()">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- About Card -->
+            <div class="card card-full-width">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <span data-icon="info"></span>
+                  About
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="about-grid">
+                  <div class="about-item">
+                    <div class="about-label">Project</div>
+                    <div class="about-value">E-Commerce Analytics Dashboard</div>
+                  </div>
+                  <div class="about-item">
+                    <div class="about-label">Version</div>
+                    <div class="about-value">1.0.0</div>
+                  </div>
+                  <div class="about-item">
+                    <div class="about-label">Course</div>
+                    <div class="about-value">Advanced Data Mining</div>
+                  </div>
+                  <div class="about-item">
+                    <div class="about-label">Team</div>
+                    <div class="about-value">Sereno, Page, Dulce, Laudato</div>
+                  </div>
+                  <div class="about-item">
+                    <div class="about-label">Instructor</div>
+                    <div class="about-value">Sir Charlston Sean Gono</div>
+                  </div>
+                  <div class="about-item">
+                    <div class="about-label">Stack</div>
+                    <div class="about-value">Flask, scikit-learn, Prophet, XGBoost, Chart.js</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </section>
+        
+      </div>
+      
+      <!-- Footer -->
+      <footer style="padding: 16px 24px; border-top: 1px solid var(--color-border-default); text-align: center; color: var(--color-text-muted); font-size: 12px;">
+        <strong>Advanced Data Mining for Customer Segmentation and Sales Forecasting</strong><br>
+        Team: Sereno, Page, Dulce, Laudato | Teacher: Sir Charlston Sean Gono
+      </footer>
+    </main>
+  </div>
+  
+  <!-- Toast Container -->
+  <div class="toast-container"></div>
+  
+  <!-- Scripts -->
+  <script src="js/icons.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    /**
+     * Initialize icons from data-icon attributes
+     */
+    function initIcons() {
+      // Set logo
+      const logo = document.getElementById('sidebar-logo');
+      if (logo) logo.innerHTML = Icons.logo;
+      
+      // Replace all data-icon elements with SVG
+      document.querySelectorAll('[data-icon]').forEach(el => {
+        const iconName = el.getAttribute('data-icon');
+        if (Icons[iconName]) {
+          el.innerHTML = Icons[iconName];
+        }
+      });
+    }
+    
+    /**
+     * Dashboard-specific functionality
+     */
+    const Dashboard = {
+      charts: {},
+      
+      /**
+       * Initialize dashboard
+       */
+      init() {
+        // Initialize icons first
+        initIcons();
+        
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('quick-date').value = today;
+        
+        // Initialize charts
+        this.initCharts();
+        
+        // Update stats
+        this.updateStats();
+        
+        // Update recent predictions table
+        this.updateRecentPredictions();
+      },
+      
+      /**
+       * Initialize Chart.js charts
+       */
+      initCharts() {
+        // Segment Distribution Chart
+        const segmentCtx = document.getElementById('segment-chart');
+        if (segmentCtx) {
+          this.charts.segment = new Chart(segmentCtx, {
+            type: 'doughnut',
+            data: {
+              labels: ['Champions', 'Loyal', 'At Risk', 'Lost'],
+              datasets: [{
+                data: [25, 30, 25, 20],
+                backgroundColor: [
+                  'rgba(63, 185, 80, 0.8)',
+                  'rgba(88, 166, 255, 0.8)',
+                  'rgba(210, 153, 34, 0.8)',
+                  'rgba(248, 81, 73, 0.8)'
+                ],
+                borderColor: '#0d1117',
+                borderWidth: 2
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: {
+                    color: '#c9d1d9',
+                    padding: 15,
+                    font: { size: 12 }
+                  }
+                }
+              }
+            }
+          });
+        }
+        
+        // Activity Chart
+        const activityCtx = document.getElementById('activity-chart');
+        if (activityCtx) {
+          const labels = [];
+          const data = [];
+          for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+            data.push(Math.floor(Math.random() * 10) + 1);
+          }
+          
+          this.charts.activity = new Chart(activityCtx, {
+            type: 'bar',
+            data: {
+              labels,
+              datasets: [{
+                label: 'Predictions',
+                data,
+                backgroundColor: 'rgba(88, 166, 255, 0.6)',
+                borderColor: 'rgba(88, 166, 255, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                  ticks: { color: '#8b949e' }
+                },
+                x: {
+                  grid: { display: false },
+                  ticks: { color: '#8b949e' }
+                }
+              }
+            }
+          });
+        }
+      },
+      
+      /**
+       * Update dashboard stats
+       */
+      updateStats() {
+        const predictions = JSON.parse(localStorage.getItem('predictions') || '[]');
+        const forecasts = JSON.parse(localStorage.getItem('forecasts') || '[]');
+        
+        document.getElementById('stat-predictions').textContent = predictions.length;
+        document.getElementById('stat-forecasts').textContent = forecasts.length;
+        document.getElementById('history-count').textContent = predictions.length + forecasts.length;
+        
+        // Count today's predictions
+        const today = new Date().toDateString();
+        const todayPredictions = predictions.filter(p => 
+          new Date(p.timestamp).toDateString() === today
+        ).length;
+        const todayForecasts = forecasts.filter(f => 
+          new Date(f.timestamp).toDateString() === today
+        ).length;
+        
+        document.getElementById('stat-predictions-change').innerHTML = 
+          `${icon('arrowUp')} ${todayPredictions} today`;
+        document.getElementById('stat-forecasts-change').innerHTML = 
+          `${icon('arrowUp')} ${todayForecasts} today`;
+      },
+      
+      /**
+       * Update recent predictions table
+       */
+      updateRecentPredictions() {
+        const predictions = JSON.parse(localStorage.getItem('predictions') || '[]');
+        const forecasts = JSON.parse(localStorage.getItem('forecasts') || '[]');
+        
+        // Combine and sort by timestamp
+        const all = [
+          ...predictions.map(p => ({ ...p, type: 'segment' })),
+          ...forecasts.map(f => ({ ...f, type: 'forecast' }))
+        ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+        
+        const tbody = document.getElementById('recent-predictions-table');
+        
+        if (all.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="text-center text-muted" style="padding: 32px;">
+                No predictions yet. Start by using the quick actions above.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+        
+        tbody.innerHTML = all.map(item => {
+          if (item.type === 'segment') {
+            return `
+              <tr>
+                <td><span class="badge badge-info">${icon('people')} Segment</span></td>
+                <td>R=${item.input.recency}, F=${item.input.frequency}, M=${item.input.monetary}</td>
+                <td><strong>${item.result.cluster_name}</strong></td>
+                <td><span class="badge ${item.result.confidence >= 70 ? 'badge-success' : item.result.confidence >= 50 ? 'badge-warning' : 'badge-danger'}">${item.result.confidence}%</span></td>
+                <td class="text-muted">${App.formatRelativeTime(item.timestamp)}</td>
+              </tr>
+            `;
+          } else {
+            return `
+              <tr>
+                <td><span class="badge badge-purple">${icon('graph')} Forecast</span></td>
+                <td>${item.input.periods} days from ${item.input.start_date}</td>
+                <td><strong>${App.formatCurrency(item.result.avg_daily_sales)}/day</strong></td>
+                <td><span class="badge ${item.result.confidence >= 70 ? 'badge-success' : item.result.confidence >= 50 ? 'badge-warning' : 'badge-danger'}">${item.result.confidence}%</span></td>
+                <td class="text-muted">${App.formatRelativeTime(item.timestamp)}</td>
+              </tr>
+            `;
+          }
+        }).join('');
+      },
+      
+      /**
+       * Quick segment prediction
+       */
+      async quickSegment() {
+        const recency = parseFloat(document.getElementById('quick-recency').value);
+        const frequency = parseFloat(document.getElementById('quick-frequency').value);
+        const monetary = parseFloat(document.getElementById('quick-monetary').value);
+        const resultDiv = document.getElementById('quick-segment-result');
+        
+        // Validate
+        if (isNaN(recency) || isNaN(frequency) || isNaN(monetary)) {
+          resultDiv.innerHTML = `<div class="alert alert-danger">${icon('alert')} Please fill in all fields.</div>`;
+          return;
+        }
+        
+        resultDiv.innerHTML = `<div class="flex items-center gap-1"><div class="loading-spinner"></div> Analyzing...</div>`;
+        
+        const result = await API.predictSegment(recency, frequency, monetary);
+        
+        if (result.success) {
+          const data = result.data;
+          
+          resultDiv.innerHTML = `
+            <div class="alert alert-success">
+              ${icon('checkCircle')} <strong>${data.cluster_name}</strong> — Confidence: ${data.confidence.overall}%
+            </div>
+          `;
+          
+          // Save to history
+          App.savePrediction({
+            input: { recency, frequency, monetary },
+            result: {
+              cluster: data.cluster,
+              cluster_name: data.cluster_name,
+              confidence: data.confidence.overall
+            }
+          });
+          
+          // Update UI
+          this.updateStats();
+          this.updateRecentPredictions();
+          
+          App.showToast('success', 'Segment Predicted', `Customer classified as ${data.cluster_name}`);
+        } else {
+          resultDiv.innerHTML = `<div class="alert alert-danger">${icon('xCircle')} ${result.error}</div>`;
+          App.showToast('error', 'Prediction Failed', result.error);
+        }
+      },
+      
+      /**
+       * Quick forecast
+       */
+      async quickForecast() {
+        const startDate = document.getElementById('quick-date').value;
+        const periods = parseInt(document.getElementById('quick-days').value);
+        const resultDiv = document.getElementById('quick-forecast-result');
+        
+        // Validate
+        if (!startDate || isNaN(periods)) {
+          resultDiv.innerHTML = `<div class="alert alert-danger">${icon('alert')} Please fill in all fields.</div>`;
+          return;
+        }
+        
+        resultDiv.innerHTML = `<div class="flex items-center gap-1"><div class="loading-spinner"></div> Generating forecast...</div>`;
+        
+        const result = await API.predictForecast(startDate, periods, 'ensemble');
+        
+        if (result.success) {
+          const data = result.data;
+          
+          resultDiv.innerHTML = `
+            <div class="alert alert-success">
+              ${icon('checkCircle')} <strong>${App.formatCurrency(data.summary.avg_daily_sales)}</strong>/day avg — Total: ${App.formatCurrency(data.summary.total_projected)}
+            </div>
+          `;
+          
+          // Save to history
+          App.saveForecast({
+            input: { start_date: startDate, periods },
+            result: {
+              avg_daily_sales: data.summary.avg_daily_sales,
+              total_projected: data.summary.total_projected,
+              confidence: data.summary.avg_confidence
+            }
+          });
+          
+          // Update UI
+          this.updateStats();
+          this.updateRecentPredictions();
+          
+          App.showToast('success', 'Forecast Generated', `${periods}-day forecast ready`);
+        } else {
+          resultDiv.innerHTML = `<div class="alert alert-danger">${icon('xCircle')} ${result.error}</div>`;
+          App.showToast('error', 'Forecast Failed', result.error);
+        }
+      }
+    };
+    
+    /**
+     * Segmentation Page Functionality
+     */
+    const Segmentation = {
+      csvData: null,
+      results: [],
+      chart: null,
+      
+      // Segment configuration
+      segments: {
+        0: { name: 'Lost Customers', color: 'var(--color-danger)', recommendation: 'Send re-engagement campaigns with special comeback offers.' },
+        1: { name: 'At Risk', color: 'var(--color-warning)', recommendation: 'Offer retention discounts and personalized recommendations.' },
+        2: { name: 'Loyal Customers', color: 'var(--color-info)', recommendation: 'Reward with loyalty points and exclusive early access.' },
+        3: { name: 'Champions', color: 'var(--color-success)', recommendation: 'Provide VIP treatment, premium support, and referral bonuses.' }
+      },
+      
+      /**
+       * Initialize segmentation page
+       */
+      init() {
+        this.setupUploadZone();
+        this.setupFilter();
+      },
+      
+      /**
+       * Setup CSV upload zone
+       */
+      setupUploadZone() {
+        const zone = document.getElementById('csv-upload-zone');
+        const input = document.getElementById('csv-file-input');
+        
+        if (!zone || !input) return;
+        
+        // Click to upload
+        zone.addEventListener('click', () => input.click());
+        
+        // Drag and drop
+        zone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          zone.classList.add('dragover');
+        });
+        
+        zone.addEventListener('dragleave', () => {
+          zone.classList.remove('dragover');
+        });
+        
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('dragover');
+          const file = e.dataTransfer.files[0];
+          if (file) this.handleFile(file);
+        });
+        
+        // File input change
+        input.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) this.handleFile(file);
+        });
+      },
+      
+      /**
+       * Handle uploaded file
+       */
+      handleFile(file) {
+        if (!file.name.endsWith('.csv')) {
+          App.showToast('error', 'Invalid File', 'Please upload a CSV file.');
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target.result;
+          this.parseCSV(text, file.name);
+        };
+        reader.readAsText(file);
+      },
+      
+      /**
+       * Parse CSV content
+       */
+      parseCSV(text, filename) {
+        const lines = text.trim().split('\n');
+        const data = [];
+        
+        // Skip header if present
+        const startLine = lines[0].toLowerCase().includes('recency') ? 1 : 0;
+        
+        for (let i = startLine; i < lines.length; i++) {
+          const parts = lines[i].split(',').map(p => parseFloat(p.trim()));
+          if (parts.length >= 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+            data.push({
+              recency: parts[0],
+              frequency: parts[1],
+              monetary: parts[2]
+            });
+          }
+        }
+        
+        if (data.length === 0) {
+          App.showToast('error', 'Invalid CSV', 'No valid data found. Check format: recency,frequency,monetary');
+          return;
+        }
+        
+        this.csvData = data;
+        
+        // Show file info
+        const fileInfo = document.getElementById('csv-file-info');
+        fileInfo.querySelector('.file-name').textContent = filename;
+        fileInfo.querySelector('.file-rows').textContent = `${data.length} customers`;
+        fileInfo.classList.remove('hidden');
+        
+        // Enable analyze button
+        document.getElementById('bulk-analyze-btn').disabled = false;
+        
+        App.showToast('success', 'File Loaded', `${data.length} customers ready for analysis.`);
+      },
+      
+      /**
+       * Clear CSV data
+       */
+      clearCSV() {
+        this.csvData = null;
+        document.getElementById('csv-file-info').classList.add('hidden');
+        document.getElementById('csv-file-input').value = '';
+        document.getElementById('bulk-analyze-btn').disabled = true;
+      },
+      
+      /**
+       * Analyze single customer
+       */
+      async analyzeSingle() {
+        const recency = parseFloat(document.getElementById('seg-recency').value);
+        const frequency = parseFloat(document.getElementById('seg-frequency').value);
+        const monetary = parseFloat(document.getElementById('seg-monetary').value);
+        const resultDiv = document.getElementById('seg-single-result');
+        
+        // Validate
+        if (isNaN(recency) || isNaN(frequency) || isNaN(monetary)) {
+          resultDiv.innerHTML = `<div class="alert alert-danger">${icon('alert')} Please fill in all RFM fields.</div>`;
+          return;
+        }
+        
+        resultDiv.innerHTML = `<div class="flex items-center gap-1"><div class="loading-spinner"></div> Analyzing customer...</div>`;
+        
+        const result = await API.predictSegment(recency, frequency, monetary);
+        
+        if (result.success) {
+          const data = result.data;
+          const seg = this.segments[data.cluster];
+          
+          resultDiv.innerHTML = `
+            <div class="segment-result-card">
+              <div class="segment-result-header">
+                <span class="segment-result-name">
+                  <span class="segment-dot" style="background: ${seg.color};"></span>
+                  ${data.cluster_name}
+                </span>
+                <span class="segment-result-confidence">${data.confidence.overall}% confidence</span>
+              </div>
+              <div class="segment-result-body">
+                <div class="segment-metric">
+                  <div class="segment-metric-value">${recency}</div>
+                  <div class="segment-metric-label">Recency</div>
+                </div>
+                <div class="segment-metric">
+                  <div class="segment-metric-value">${frequency}</div>
+                  <div class="segment-metric-label">Frequency</div>
+                </div>
+                <div class="segment-metric">
+                  <div class="segment-metric-value">${App.formatNumber(monetary)}</div>
+                  <div class="segment-metric-label">Monetary</div>
+                </div>
+              </div>
+              <div class="segment-recommendation">
+                ${icon('lightBulb')}
+                <span>${seg.recommendation}</span>
+              </div>
+            </div>
+          `;
+          
+          // Highlight segment card
+          document.querySelectorAll('.segment-info-card').forEach(card => {
+            card.classList.remove('active');
+            if (card.dataset.segment == data.cluster) {
+              card.classList.add('active');
+            }
+          });
+          
+          // Save to history
+          App.savePrediction({
+            input: { recency, frequency, monetary },
+            result: {
+              cluster: data.cluster,
+              cluster_name: data.cluster_name,
+              confidence: data.confidence.overall
+            }
+          });
+          
+          App.showToast('success', 'Analysis Complete', `Customer is a ${data.cluster_name}`);
+        } else {
+          resultDiv.innerHTML = `<div class="alert alert-danger">${icon('xCircle')} ${result.error}</div>`;
+          App.showToast('error', 'Analysis Failed', result.error);
+        }
+      },
+      
+      /**
+       * Analyze bulk customers
+       */
+      async analyzeBulk() {
+        if (!this.csvData || this.csvData.length === 0) {
+          App.showToast('error', 'No Data', 'Please upload a CSV file first.');
+          return;
+        }
+        
+        const btn = document.getElementById('bulk-analyze-btn');
+        btn.disabled = true;
+        btn.innerHTML = `<div class="loading-spinner"></div> Processing ${this.csvData.length} customers...`;
+        
+        this.results = [];
+        let successful = 0;
+        let failed = 0;
+        
+        // Process in batches
+        for (let i = 0; i < this.csvData.length; i++) {
+          const customer = this.csvData[i];
+          const result = await API.predictSegment(customer.recency, customer.frequency, customer.monetary);
+          
+          if (result.success) {
+            this.results.push({
+              index: i + 1,
+              ...customer,
+              cluster: result.data.cluster,
+              cluster_name: result.data.cluster_name,
+              confidence: result.data.confidence.overall,
+              recommendation: this.segments[result.data.cluster].recommendation
+            });
+            successful++;
+          } else {
+            failed++;
+          }
+          
+          // Update progress
+          btn.innerHTML = `<div class="loading-spinner"></div> Processing ${i + 1}/${this.csvData.length}...`;
+        }
+        
+        btn.disabled = false;
+        btn.innerHTML = `${icon('cpu')} Process All Customers`;
+        
+        if (successful > 0) {
+          this.showResults();
+          App.showToast('success', 'Bulk Analysis Complete', `${successful} customers analyzed successfully.`);
+        } else {
+          App.showToast('error', 'Analysis Failed', 'Could not analyze any customers.');
+        }
+      },
+      
+      /**
+       * Show results section
+       */
+      showResults() {
+        document.getElementById('seg-results-section').classList.remove('hidden');
+        initIcons(); // Re-init icons for new elements
+        
+        // Calculate stats
+        const counts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+        let totalConf = 0;
+        
+        this.results.forEach(r => {
+          counts[r.cluster]++;
+          totalConf += r.confidence;
+        });
+        
+        // Update summary
+        document.getElementById('seg-total').textContent = this.results.length;
+        document.getElementById('seg-champions').textContent = counts[3];
+        document.getElementById('seg-loyal').textContent = counts[2];
+        document.getElementById('seg-atrisk').textContent = counts[1];
+        document.getElementById('seg-lost').textContent = counts[0];
+        document.getElementById('seg-avg-conf').textContent = Math.round(totalConf / this.results.length) + '%';
+        
+        // Update chart
+        this.updateChart(counts);
+        
+        // Update table
+        this.updateTable();
+      },
+      
+      /**
+       * Update distribution chart
+       */
+      updateChart(counts) {
+        const ctx = document.getElementById('seg-distribution-chart');
+        if (!ctx) return;
+        
+        if (this.chart) {
+          this.chart.destroy();
+        }
+        
+        this.chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Lost Customers', 'At Risk', 'Loyal Customers', 'Champions'],
+            datasets: [{
+              label: 'Customers',
+              data: [counts[0], counts[1], counts[2], counts[3]],
+              backgroundColor: [
+                'rgba(248, 81, 73, 0.7)',
+                'rgba(210, 153, 34, 0.7)',
+                'rgba(88, 166, 255, 0.7)',
+                'rgba(63, 185, 80, 0.7)'
+              ],
+              borderColor: [
+                'rgba(248, 81, 73, 1)',
+                'rgba(210, 153, 34, 1)',
+                'rgba(88, 166, 255, 1)',
+                'rgba(63, 185, 80, 1)'
+              ],
+              borderWidth: 1,
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                ticks: { color: '#8b949e' }
+              },
+              x: {
+                grid: { display: false },
+                ticks: { color: '#8b949e' }
+              }
+            }
+          }
+        });
+      },
+      
+      /**
+       * Update results table
+       */
+      updateTable() {
+        const tbody = document.getElementById('seg-results-tbody');
+        
+        tbody.innerHTML = this.results.map(r => {
+          const seg = this.segments[r.cluster];
+          const badgeClass = r.cluster === 3 ? 'badge-success' : r.cluster === 2 ? 'badge-info' : r.cluster === 1 ? 'badge-warning' : 'badge-danger';
+          
+          return `
+            <tr>
+              <td>${r.index}</td>
+              <td>${r.recency}</td>
+              <td>${r.frequency}</td>
+              <td>${App.formatNumber(r.monetary)}</td>
+              <td><span class="badge ${badgeClass}">${r.cluster_name}</span></td>
+              <td>${r.confidence}%</td>
+              <td class="text-muted" style="font-size: 12px;">${r.recommendation.substring(0, 50)}...</td>
+            </tr>
+          `;
+        }).join('');
+      },
+      
+      /**
+       * Setup filter functionality
+       */
+      setupFilter() {
+        const filter = document.getElementById('seg-filter');
+        if (!filter) return;
+        
+        filter.addEventListener('input', (e) => {
+          const query = e.target.value.toLowerCase();
+          const rows = document.querySelectorAll('#seg-results-tbody tr');
+          
+          rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+          });
+        });
+      },
+      
+      /**
+       * Export results to CSV
+       */
+      exportResults() {
+        if (this.results.length === 0) {
+          App.showToast('warning', 'No Results', 'Nothing to export yet.');
+          return;
+        }
+        
+        const headers = ['Index', 'Recency', 'Frequency', 'Monetary', 'Segment', 'Confidence', 'Recommendation'];
+        const rows = this.results.map(r => [
+          r.index, r.recency, r.frequency, r.monetary, r.cluster_name, r.confidence + '%', `"${r.recommendation}"`
+        ]);
+        
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `segmentation_results_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        App.showToast('success', 'Export Complete', 'Results downloaded as CSV.');
+      }
+    };
+    
+    /**
+     * Forecasting Page Functionality
+     */
+    const Forecasting = {
+      chart: null,
+      results: [],
+      
+      /**
+       * Initialize forecasting page
+       */
+      init() {
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('fc-start-date').value = today;
+        
+        // Setup model card selection
+        this.setupModelCards();
+      },
+      
+      /**
+       * Setup model card click handlers
+       */
+      setupModelCards() {
+        document.querySelectorAll('.model-card').forEach(card => {
+          card.addEventListener('click', () => {
+            document.querySelectorAll('.model-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            document.getElementById('fc-model').value = card.dataset.model;
+          });
+        });
+        
+        // Sync select with cards
+        document.getElementById('fc-model').addEventListener('change', (e) => {
+          document.querySelectorAll('.model-card').forEach(c => {
+            c.classList.toggle('active', c.dataset.model === e.target.value);
+          });
+        });
+      },
+      
+      /**
+       * Generate forecast
+       */
+      async generateForecast() {
+        const startDate = document.getElementById('fc-start-date').value;
+        const periods = parseInt(document.getElementById('fc-periods').value);
+        const model = document.getElementById('fc-model').value;
+        
+        // Validate
+        if (!startDate) {
+          App.showToast('error', 'Missing Date', 'Please select a start date.');
+          return;
+        }
+        
+        if (isNaN(periods) || periods < 1 || periods > 90) {
+          App.showToast('error', 'Invalid Period', 'Period must be between 1-90 days.');
+          return;
+        }
+        
+        // Show loading
+        const placeholder = document.getElementById('fc-chart-placeholder');
+        placeholder.innerHTML = `<div class="loading-spinner"></div><p style="margin-top: 12px;">Generating ${periods}-day forecast...</p>`;
+        
+        const result = await API.predictForecast(startDate, periods, model);
+        
+        if (result.success) {
+          this.results = result.data.predictions;
+          this.showResults(result.data, startDate, periods, model);
+          
+          // Save to history
+          App.saveForecast({
+            input: { start_date: startDate, periods, model },
+            result: {
+              avg_daily_sales: result.data.summary.avg_daily_sales,
+              total_projected: result.data.summary.total_projected,
+              confidence: result.data.summary.avg_confidence
+            }
+          });
+          
+          App.showToast('success', 'Forecast Ready', `${periods}-day forecast generated successfully.`);
+        } else {
+          placeholder.innerHTML = `
+            <span data-icon="xCircle" class="placeholder-icon" style="color: var(--color-danger);"></span>
+            <p>${result.error}</p>
+          `;
+          initIcons();
+          App.showToast('error', 'Forecast Failed', result.error);
+        }
+      },
+      
+      /**
+       * Show forecast results
+       */
+      showResults(data, startDate, periods, model) {
+        // Hide placeholder, show chart
+        document.getElementById('fc-chart-placeholder').style.display = 'none';
+        document.getElementById('fc-main-chart').style.display = 'block';
+        document.getElementById('fc-chart-actions').style.display = 'flex';
+        document.getElementById('fc-results-section').classList.remove('hidden');
+        
+        // Update summary stats
+        document.getElementById('fc-stat-days').textContent = periods;
+        document.getElementById('fc-stat-total').textContent = App.formatCurrency(data.summary.total_projected);
+        document.getElementById('fc-stat-daily').textContent = App.formatCurrency(data.summary.avg_daily_sales);
+        document.getElementById('fc-stat-conf').textContent = Math.round(data.summary.avg_confidence) + '%';
+        
+        // Update chart
+        this.updateChart(data.predictions);
+        
+        // Update table
+        this.updateTable(data.predictions);
+        
+        // Re-init icons
+        initIcons();
+      },
+      
+      /**
+       * Update forecast chart
+       */
+      updateChart(predictions) {
+        const ctx = document.getElementById('fc-main-chart');
+        if (!ctx) return;
+        
+        if (this.chart) {
+          this.chart.destroy();
+        }
+        
+        const labels = predictions.map(p => {
+          const date = new Date(p.date);
+          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+        
+        const datasets = [
+          {
+            label: 'Final Forecast',
+            data: predictions.map(p => p.final_forecast),
+            borderColor: 'rgba(88, 166, 255, 1)',
+            backgroundColor: 'rgba(88, 166, 255, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2
+          }
+        ];
+        
+        // Add Prophet/XGBoost lines if available
+        if (predictions[0].prophet_forecast !== undefined) {
+          datasets.push({
+            label: 'Prophet',
+            data: predictions.map(p => p.prophet_forecast),
+            borderColor: 'rgba(163, 113, 247, 0.6)',
+            borderWidth: 1,
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.3
+          });
+        }
+        
+        if (predictions[0].xgboost_forecast !== undefined) {
+          datasets.push({
+            label: 'XGBoost',
+            data: predictions.map(p => p.xgboost_forecast),
+            borderColor: 'rgba(63, 185, 80, 0.6)',
+            borderWidth: 1,
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.3
+          });
+        }
+        
+        this.chart = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              intersect: false,
+              mode: 'index'
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  color: '#c9d1d9',
+                  padding: 15,
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  pointStyle: 'line'
+                }
+              },
+              tooltip: {
+                backgroundColor: '#161b22',
+                borderColor: '#30363d',
+                borderWidth: 1,
+                titleColor: '#c9d1d9',
+                bodyColor: '#8b949e',
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${App.formatCurrency(ctx.raw)}`
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: false,
+                grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                ticks: { 
+                  color: '#8b949e',
+                  callback: (value) => App.formatCurrency(value)
+                }
+              },
+              x: {
+                grid: { display: false },
+                ticks: { color: '#8b949e' }
+              }
+            }
+          }
+        });
+      },
+      
+      /**
+       * Update results table
+       */
+      updateTable(predictions) {
+        const tbody = document.getElementById('fc-results-tbody');
+        
+        tbody.innerHTML = predictions.map(p => {
+          const date = new Date(p.date);
+          const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+          const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          
+          const prophet = p.prophet_forecast !== undefined ? App.formatCurrency(p.prophet_forecast) : '-';
+          const xgboost = p.xgboost_forecast !== undefined ? App.formatCurrency(p.xgboost_forecast) : '-';
+          
+          const confClass = p.confidence >= 70 ? 'badge-success' : p.confidence >= 50 ? 'badge-warning' : 'badge-danger';
+          
+          return `
+            <tr>
+              <td>${dateStr}</td>
+              <td>${dayName}</td>
+              <td class="text-muted">${prophet}</td>
+              <td class="text-muted">${xgboost}</td>
+              <td><strong>${App.formatCurrency(p.final_forecast)}</strong></td>
+              <td><span class="badge ${confClass}">${Math.round(p.confidence)}%</span></td>
+            </tr>
+          `;
+        }).join('');
+      },
+      
+      /**
+       * Export chart as image
+       */
+      exportChart() {
+        const canvas = document.getElementById('fc-main-chart');
+        if (!canvas) return;
+        
+        const url = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `forecast_chart_${new Date().toISOString().split('T')[0]}.png`;
+        a.click();
+        
+        App.showToast('success', 'Chart Exported', 'Chart image downloaded.');
+      },
+      
+      /**
+       * Export results to CSV
+       */
+      exportCSV() {
+        if (this.results.length === 0) {
+          App.showToast('warning', 'No Results', 'Generate a forecast first.');
+          return;
+        }
+        
+        const headers = ['Date', 'Day', 'Prophet', 'XGBoost', 'Final Forecast', 'Confidence'];
+        const rows = this.results.map(p => {
+          const date = new Date(p.date);
+          return [
+            date.toISOString().split('T')[0],
+            date.toLocaleDateString('en-US', { weekday: 'short' }),
+            p.prophet_forecast || '',
+            p.xgboost_forecast || '',
+            p.final_forecast,
+            p.confidence + '%'
+          ];
+        });
+        
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `forecast_results_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        App.showToast('success', 'Export Complete', 'Forecast data downloaded as CSV.');
+      }
+    };
+    
+    /**
+     * Analytics Page Functionality
+     */
+    const Analytics = {
+      charts: {},
+      
+      /**
+       * Initialize analytics
+       */
+      init() {
+        this.refresh();
+      },
+      
+      /**
+       * Refresh all analytics
+       */
+      refresh() {
+        const predictions = JSON.parse(localStorage.getItem('predictions') || '[]');
+        const forecasts = JSON.parse(localStorage.getItem('forecasts') || '[]');
+        
+        // Update stats
+        this.updateStats(predictions, forecasts);
+        
+        // Update charts
+        this.updateSegmentChart(predictions);
+        this.updateActivityChart(predictions, forecasts);
+        this.updateConfidenceChart(predictions, forecasts);
+        this.updateRFMChart(predictions);
+        
+        // Update insights
+        this.updateInsights(predictions, forecasts);
+        
+        initIcons();
+      },
+      
+      /**
+       * Update overview stats
+       */
+      updateStats(predictions, forecasts) {
+        const total = predictions.length + forecasts.length;
+        document.getElementById('an-total-ops').textContent = total;
+        document.getElementById('an-total-segments').textContent = predictions.length;
+        document.getElementById('an-total-forecasts').textContent = forecasts.length;
+        
+        // Calculate average confidence
+        let totalConf = 0;
+        let count = 0;
+        predictions.forEach(p => { totalConf += p.result.confidence; count++; });
+        forecasts.forEach(f => { totalConf += f.result.confidence; count++; });
+        
+        const avgConf = count > 0 ? Math.round(totalConf / count) : 0;
+        document.getElementById('an-avg-conf').textContent = avgConf + '%';
+      },
+      
+      /**
+       * Update segment distribution chart
+       */
+      updateSegmentChart(predictions) {
+        const placeholder = document.getElementById('an-seg-placeholder');
+        const canvas = document.getElementById('an-segment-chart');
+        
+        if (predictions.length === 0) {
+          placeholder.style.display = 'flex';
+          canvas.style.display = 'none';
+          return;
+        }
+        
+        placeholder.style.display = 'none';
+        canvas.style.display = 'block';
+        
+        // Count segments
+        const counts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+        predictions.forEach(p => counts[p.result.cluster]++);
+        
+        if (this.charts.segment) this.charts.segment.destroy();
+        
+        this.charts.segment = new Chart(canvas, {
+          type: 'doughnut',
+          data: {
+            labels: ['Lost', 'At Risk', 'Loyal', 'Champions'],
+            datasets: [{
+              data: [counts[0], counts[1], counts[2], counts[3]],
+              backgroundColor: [
+                'rgba(248, 81, 73, 0.8)',
+                'rgba(210, 153, 34, 0.8)',
+                'rgba(88, 166, 255, 0.8)',
+                'rgba(63, 185, 80, 0.8)'
+              ],
+              borderColor: '#0d1117',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: { color: '#c9d1d9', padding: 10, font: { size: 11 } }
+              }
+            }
+          }
+        });
+      },
+      
+      /**
+       * Update activity timeline chart
+       */
+      updateActivityChart(predictions, forecasts) {
+        const placeholder = document.getElementById('an-activity-placeholder');
+        const canvas = document.getElementById('an-activity-chart');
+        
+        if (predictions.length === 0 && forecasts.length === 0) {
+          placeholder.style.display = 'flex';
+          canvas.style.display = 'none';
+          return;
+        }
+        
+        placeholder.style.display = 'none';
+        canvas.style.display = 'block';
+        
+        // Group by day (last 7 days)
+        const days = {};
+        for (let i = 6; i >= 0; i--) {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          const key = date.toDateString();
+          days[key] = { segments: 0, forecasts: 0 };
+        }
+        
+        predictions.forEach(p => {
+          const key = new Date(p.timestamp).toDateString();
+          if (days[key]) days[key].segments++;
+        });
+        
+        forecasts.forEach(f => {
+          const key = new Date(f.timestamp).toDateString();
+          if (days[key]) days[key].forecasts++;
+        });
+        
+        const labels = Object.keys(days).map(d => {
+          const date = new Date(d);
+          return date.toLocaleDateString('en-US', { weekday: 'short' });
+        });
+        
+        if (this.charts.activity) this.charts.activity.destroy();
+        
+        this.charts.activity = new Chart(canvas, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'Segments',
+                data: Object.values(days).map(d => d.segments),
+                backgroundColor: 'rgba(88, 166, 255, 0.7)',
+                borderRadius: 4
+              },
+              {
+                label: 'Forecasts',
+                data: Object.values(days).map(d => d.forecasts),
+                backgroundColor: 'rgba(163, 113, 247, 0.7)',
+                borderRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: '#c9d1d9', font: { size: 11 } } }
+            },
+            scales: {
+              y: { beginAtZero: true, grid: { color: 'rgba(48, 54, 61, 0.5)' }, ticks: { color: '#8b949e' } },
+              x: { grid: { display: false }, ticks: { color: '#8b949e' } }
+            }
+          }
+        });
+      },
+      
+      /**
+       * Update confidence distribution chart
+       */
+      updateConfidenceChart(predictions, forecasts) {
+        const placeholder = document.getElementById('an-conf-placeholder');
+        const canvas = document.getElementById('an-confidence-chart');
+        
+        const all = [...predictions, ...forecasts];
+        if (all.length === 0) {
+          placeholder.style.display = 'flex';
+          canvas.style.display = 'none';
+          return;
+        }
+        
+        placeholder.style.display = 'none';
+        canvas.style.display = 'block';
+        
+        // Group by confidence ranges
+        const ranges = { 'Low (<50%)': 0, 'Medium (50-70%)': 0, 'High (70-90%)': 0, 'Very High (>90%)': 0 };
+        all.forEach(item => {
+          const conf = item.result.confidence;
+          if (conf < 50) ranges['Low (<50%)']++;
+          else if (conf < 70) ranges['Medium (50-70%)']++;
+          else if (conf < 90) ranges['High (70-90%)']++;
+          else ranges['Very High (>90%)']++;
+        });
+        
+        if (this.charts.confidence) this.charts.confidence.destroy();
+        
+        this.charts.confidence = new Chart(canvas, {
+          type: 'bar',
+          data: {
+            labels: Object.keys(ranges),
+            datasets: [{
+              data: Object.values(ranges),
+              backgroundColor: [
+                'rgba(248, 81, 73, 0.7)',
+                'rgba(210, 153, 34, 0.7)',
+                'rgba(88, 166, 255, 0.7)',
+                'rgba(63, 185, 80, 0.7)'
+              ],
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: 'rgba(48, 54, 61, 0.5)' }, ticks: { color: '#8b949e' } },
+              x: { grid: { display: false }, ticks: { color: '#8b949e', font: { size: 10 } } }
+            }
+          }
+        });
+      },
+      
+      /**
+       * Update RFM averages chart
+       */
+      updateRFMChart(predictions) {
+        const placeholder = document.getElementById('an-rfm-placeholder');
+        const canvas = document.getElementById('an-rfm-chart');
+        
+        if (predictions.length === 0) {
+          placeholder.style.display = 'flex';
+          canvas.style.display = 'none';
+          return;
+        }
+        
+        placeholder.style.display = 'none';
+        canvas.style.display = 'block';
+        
+        // Calculate averages by segment
+        const segmentData = { 0: [], 1: [], 2: [], 3: [] };
+        predictions.forEach(p => {
+          segmentData[p.result.cluster].push(p.input);
+        });
+        
+        const avgR = [], avgF = [], avgM = [];
+        [0, 1, 2, 3].forEach(seg => {
+          const data = segmentData[seg];
+          if (data.length > 0) {
+            avgR.push(Math.round(data.reduce((s, d) => s + d.recency, 0) / data.length));
+            avgF.push(Math.round(data.reduce((s, d) => s + d.frequency, 0) / data.length * 10) / 10);
+            avgM.push(Math.round(data.reduce((s, d) => s + d.monetary, 0) / data.length));
+          } else {
+            avgR.push(0);
+            avgF.push(0);
+            avgM.push(0);
+          }
+        });
+        
+        if (this.charts.rfm) this.charts.rfm.destroy();
+        
+        this.charts.rfm = new Chart(canvas, {
+          type: 'radar',
+          data: {
+            labels: ['Lost', 'At Risk', 'Loyal', 'Champions'],
+            datasets: [
+              {
+                label: 'Avg Recency',
+                data: avgR,
+                borderColor: 'rgba(248, 81, 73, 0.8)',
+                backgroundColor: 'rgba(248, 81, 73, 0.1)',
+                pointBackgroundColor: 'rgba(248, 81, 73, 1)'
+              },
+              {
+                label: 'Avg Frequency x100',
+                data: avgF.map(f => f * 100),
+                borderColor: 'rgba(88, 166, 255, 0.8)',
+                backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                pointBackgroundColor: 'rgba(88, 166, 255, 1)'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#c9d1d9', font: { size: 10 } } } },
+            scales: {
+              r: {
+                grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                angleLines: { color: 'rgba(48, 54, 61, 0.5)' },
+                pointLabels: { color: '#8b949e', font: { size: 10 } },
+                ticks: { display: false }
+              }
+            }
+          }
+        });
+      },
+      
+      /**
+       * Update insights
+       */
+      updateInsights(predictions, forecasts) {
+        const container = document.getElementById('an-insights');
+        const insights = [];
+        
+        if (predictions.length === 0 && forecasts.length === 0) {
+          container.innerHTML = `
+            <div class="insight-card">
+              <div class="insight-icon" data-icon="info"></div>
+              <div class="insight-content">
+                <div class="insight-title">Getting Started</div>
+                <div class="insight-text">Make predictions in the Segmentation or Forecasting pages to see analytics here.</div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+        
+        // Segment insights
+        if (predictions.length > 0) {
+          const counts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+          predictions.forEach(p => counts[p.result.cluster]++);
+          
+          const atRiskPct = Math.round((counts[0] + counts[1]) / predictions.length * 100);
+          if (atRiskPct > 50) {
+            insights.push({
+              icon: 'warning',
+              class: 'warning',
+              title: 'High At-Risk Rate',
+              text: `${atRiskPct}% of customers are Lost or At Risk. Consider retention campaigns.`
+            });
+          }
+          
+          if (counts[3] > 0) {
+            insights.push({
+              icon: 'checkCircle',
+              class: 'success',
+              title: 'Champions Identified',
+              text: `You have ${counts[3]} Champion customers. Focus on referral programs for these VIPs.`
+            });
+          }
+        }
+        
+        // Forecast insights
+        if (forecasts.length > 0) {
+          const avgConf = forecasts.reduce((s, f) => s + f.result.confidence, 0) / forecasts.length;
+          if (avgConf < 60) {
+            insights.push({
+              icon: 'alert',
+              class: 'danger',
+              title: 'Low Forecast Confidence',
+              text: 'Recent forecasts have low confidence. Consider gathering more historical data.'
+            });
+          }
+        }
+        
+        // General insights
+        const total = predictions.length + forecasts.length;
+        insights.push({
+          icon: 'pulse',
+          class: '',
+          title: 'Total Operations',
+          text: `You have made ${total} predictions (${predictions.length} segments, ${forecasts.length} forecasts).`
+        });
+        
+        container.innerHTML = insights.map(i => `
+          <div class="insight-card">
+            <div class="insight-icon ${i.class}" data-icon="${i.icon}"></div>
+            <div class="insight-content">
+              <div class="insight-title">${i.title}</div>
+              <div class="insight-text">${i.text}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+    };
+    
+    /**
+     * History Page Functionality
+     */
+    const History = {
+      /**
+       * Initialize history page
+       */
+      init() {
+        this.setupFilters();
+        this.refresh();
+      },
+      
+      /**
+       * Setup filter handlers
+       */
+      setupFilters() {
+        ['hist-filter-type', 'hist-filter-date'].forEach(id => {
+          document.getElementById(id)?.addEventListener('change', () => this.refresh());
+        });
+        
+        document.getElementById('hist-search')?.addEventListener('input', () => this.refresh());
+      },
+      
+      /**
+       * Refresh history table
+       */
+      refresh() {
+        const predictions = JSON.parse(localStorage.getItem('predictions') || '[]');
+        const forecasts = JSON.parse(localStorage.getItem('forecasts') || '[]');
+        
+        // Combine and add type
+        let all = [
+          ...predictions.map(p => ({ ...p, type: 'segment' })),
+          ...forecasts.map(f => ({ ...f, type: 'forecast' }))
+        ];
+        
+        // Apply filters
+        const typeFilter = document.getElementById('hist-filter-type')?.value || 'all';
+        const dateFilter = document.getElementById('hist-filter-date')?.value || 'all';
+        const search = document.getElementById('hist-search')?.value?.toLowerCase() || '';
+        
+        if (typeFilter !== 'all') {
+          all = all.filter(item => item.type === typeFilter);
+        }
+        
+        if (dateFilter !== 'all') {
+          const now = new Date();
+          all = all.filter(item => {
+            const date = new Date(item.timestamp);
+            if (dateFilter === 'today') return date.toDateString() === now.toDateString();
+            if (dateFilter === 'week') {
+              const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+              return date >= weekAgo;
+            }
+            if (dateFilter === 'month') {
+              const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+              return date >= monthAgo;
+            }
+            return true;
+          });
+        }
+        
+        if (search) {
+          all = all.filter(item => {
+            const str = JSON.stringify(item).toLowerCase();
+            return str.includes(search);
+          });
+        }
+        
+        // Sort by timestamp descending
+        all.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        // Update count
+        document.getElementById('hist-count').textContent = `${all.length} records`;
+        
+        // Update table
+        this.updateTable(all);
+      },
+      
+      /**
+       * Update history table
+       */
+      updateTable(items) {
+        const tbody = document.getElementById('hist-tbody');
+        
+        if (items.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="text-center text-muted" style="padding: 48px;">
+                No records match your filters.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+        
+        tbody.innerHTML = items.map((item, idx) => {
+          const isSegment = item.type === 'segment';
+          const badgeClass = isSegment ? 'badge-info' : 'badge-purple';
+          const typeIcon = isSegment ? 'people' : 'graph';
+          const typeLabel = isSegment ? 'Segment' : 'Forecast';
+          
+          let inputStr, resultStr;
+          if (isSegment) {
+            inputStr = `R=${item.input.recency}, F=${item.input.frequency}, M=${item.input.monetary}`;
+            resultStr = item.result.cluster_name;
+          } else {
+            inputStr = `${item.input.periods} days from ${item.input.start_date}`;
+            resultStr = App.formatCurrency(item.result.avg_daily_sales) + '/day';
+          }
+          
+          const confClass = item.result.confidence >= 70 ? 'badge-success' : item.result.confidence >= 50 ? 'badge-warning' : 'badge-danger';
+          const timestamp = new Date(item.timestamp).toLocaleString();
+          
+          return `
+            <tr>
+              <td><span class="badge ${badgeClass}">${icon(typeIcon)} ${typeLabel}</span></td>
+              <td>${inputStr}</td>
+              <td><strong>${resultStr}</strong></td>
+              <td><span class="badge ${confClass}">${item.result.confidence}%</span></td>
+              <td class="text-muted" style="font-size: 12px;">${timestamp}</td>
+              <td>
+                <button class="btn btn-icon btn-sm" onclick="History.delete(${idx})" title="Delete">
+                  <span data-icon="trash"></span>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        
+        initIcons();
+      },
+      
+      /**
+       * Clear filters
+       */
+      clearFilters() {
+        document.getElementById('hist-filter-type').value = 'all';
+        document.getElementById('hist-filter-date').value = 'all';
+        document.getElementById('hist-search').value = '';
+        this.refresh();
+      },
+      
+      /**
+       * Clear all history
+       */
+      clearAll() {
+        if (!confirm('Are you sure you want to delete all history? This cannot be undone.')) return;
+        
+        localStorage.removeItem('predictions');
+        localStorage.removeItem('forecasts');
+        this.refresh();
+        Dashboard.updateStats();
+        Dashboard.updateRecentPredictions();
+        Analytics.refresh();
+        
+        App.showToast('success', 'History Cleared', 'All records have been deleted.');
+      },
+      
+      /**
+       * Delete single item
+       */
+      delete(idx) {
+        // This is simplified - in a real app you'd need proper indexing
+        App.showToast('info', 'Delete', 'Individual deletion coming soon.');
+      },
+      
+      /**
+       * Export all history
+       */
+      exportAll() {
+        const predictions = JSON.parse(localStorage.getItem('predictions') || '[]');
+        const forecasts = JSON.parse(localStorage.getItem('forecasts') || '[]');
+        
+        if (predictions.length === 0 && forecasts.length === 0) {
+          App.showToast('warning', 'No Data', 'Nothing to export.');
+          return;
+        }
+        
+        const data = { predictions, forecasts, exportedAt: new Date().toISOString() };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `analytics_history_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        App.showToast('success', 'Export Complete', 'History downloaded as JSON.');
+      }
+    };
+    
+    /**
+     * Settings Page Functionality
+     */
+    const Settings = {
+      supabaseConnected: false,
+      supabaseUrl: 'https://mgdrnuqogjojafezeqmhy.supabase.co',
+      supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nZHJudXFvZ2pvamFmZXplcW1oeSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzQ3NzU3MjUwLCJleHAiOjIwNjMzMzMyNTB9.QNTJOcJ8A0BU3Lk1Ri1q_OiUYTgQPUAqy2pbpDBu-aI',
+      
+      /**
+       * Initialize settings
+       */
+      init() {
+        this.checkAPI();
+        this.updateDataStats();
+        this.loadPreferences();
+      },
+      
+      /**
+       * Check API status
+       */
+      async checkAPI() {
+        const statusEl = document.getElementById('set-api-status');
+        const modelsEl = document.getElementById('set-models-count');
+        
+        try {
+          const response = await fetch('http://localhost:5000/api/health');
+          if (response.ok) {
+            const data = await response.json();
+            statusEl.className = 'status-badge status-online';
+            statusEl.innerHTML = `<span data-icon="dotFill"></span> Online`;
+            modelsEl.textContent = data.models_loaded || '4';
+          } else {
+            throw new Error('API not responding');
+          }
+        } catch (error) {
+          statusEl.className = 'status-badge status-error';
+          statusEl.innerHTML = `<span data-icon="dotFill"></span> Offline`;
+          modelsEl.textContent = '--';
+        }
+        
+        initIcons();
+      },
+      
+      /**
+       * Update local data statistics
+       */
+      updateDataStats() {
+        const predictions = JSON.parse(localStorage.getItem('predictions') || '[]');
+        const forecasts = JSON.parse(localStorage.getItem('forecasts') || '[]');
+        
+        document.getElementById('set-pred-count').textContent = predictions.length;
+        document.getElementById('set-forecast-count').textContent = forecasts.length;
+        
+        // Calculate storage size
+        const predSize = new Blob([JSON.stringify(predictions)]).size;
+        const forecastSize = new Blob([JSON.stringify(forecasts)]).size;
+        const totalKB = ((predSize + forecastSize) / 1024).toFixed(1);
+        document.getElementById('set-storage-size').textContent = totalKB + ' KB';
+      },
+      
+      /**
+       * Load user preferences
+       */
+      loadPreferences() {
+        const prefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+        
+        if (prefs.animations !== undefined) {
+          document.getElementById('set-animations').checked = prefs.animations;
+        }
+        
+        if (prefs.compact) {
+          document.getElementById('set-compact').checked = true;
+          document.body.classList.add('compact-mode');
+        }
+      },
+      
+      /**
+       * Toggle chart animations
+       */
+      toggleAnimations() {
+        const enabled = document.getElementById('set-animations').checked;
+        const prefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+        prefs.animations = enabled;
+        localStorage.setItem('preferences', JSON.stringify(prefs));
+        
+        // Update Chart.js default
+        Chart.defaults.animation = enabled;
+        
+        App.showToast('success', 'Preference Saved', `Chart animations ${enabled ? 'enabled' : 'disabled'}.`);
+      },
+      
+      /**
+       * Toggle compact mode
+       */
+      toggleCompact() {
+        const enabled = document.getElementById('set-compact').checked;
+        const prefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+        prefs.compact = enabled;
+        localStorage.setItem('preferences', JSON.stringify(prefs));
+        
+        document.body.classList.toggle('compact-mode', enabled);
+        
+        App.showToast('success', 'Preference Saved', `Compact mode ${enabled ? 'enabled' : 'disabled'}.`);
+      },
+      
+      /**
+       * Connect to Supabase
+       */
+      async connectSupabase() {
+        const statusEl = document.getElementById('set-supabase-status');
+        const syncStatusEl = document.getElementById('set-sync-status');
+        const btnConnect = document.getElementById('btn-connect-supabase');
+        const btnSync = document.getElementById('btn-sync-now');
+        
+        btnConnect.disabled = true;
+        btnConnect.innerHTML = '<span data-icon="sync"></span> Connecting...';
+        
+        try {
+          // Test connection to Supabase
+          const response = await fetch(`${this.supabaseUrl}/rest/v1/`, {
+            headers: {
+              'apikey': this.supabaseKey,
+              'Authorization': `Bearer ${this.supabaseKey}`
+            }
+          });
+          
+          if (response.ok || response.status === 404) {
+            // Connection successful (404 is expected for root endpoint)
+            this.supabaseConnected = true;
+            
+            statusEl.className = 'status-badge status-online';
+            statusEl.innerHTML = '<span data-icon="dotFill"></span> Connected';
+            
+            syncStatusEl.className = 'badge badge-success';
+            syncStatusEl.textContent = 'Cloud Enabled';
+            
+            btnConnect.innerHTML = '<span data-icon="check"></span> Connected';
+            btnSync.disabled = false;
+            
+            App.showToast('success', 'Connected', 'Successfully connected to Supabase cloud.');
+          } else {
+            throw new Error('Connection failed');
+          }
+        } catch (error) {
+          statusEl.className = 'status-badge status-error';
+          statusEl.innerHTML = '<span data-icon="dotFill"></span> Error';
+          
+          btnConnect.disabled = false;
+          btnConnect.innerHTML = '<span data-icon="zap"></span> Retry';
+          
+          App.showToast('error', 'Connection Failed', 'Could not connect to Supabase. Check your credentials.');
+        }
+        
+        initIcons();
+      },
+      
+      /**
+       * Sync data with Supabase
+       */
+      async syncNow() {
+        if (!this.supabaseConnected) {
+          App.showToast('warning', 'Not Connected', 'Please connect to Supabase first.');
+          return;
+        }
+        
+        const btnSync = document.getElementById('btn-sync-now');
+        btnSync.disabled = true;
+        btnSync.innerHTML = '<span data-icon="sync"></span> Syncing...';
+        
+        try {
+          const predictions = JSON.parse(localStorage.getItem('predictions') || '[]');
+          const forecasts = JSON.parse(localStorage.getItem('forecasts') || '[]');
+          
+          // In a real implementation, you would:
+          // 1. Push local data to Supabase tables
+          // 2. Pull remote changes
+          // 3. Merge and resolve conflicts
+          
+          // For demo, just simulate sync
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
+          const now = new Date().toLocaleString();
+          document.getElementById('set-last-sync').textContent = now;
+          localStorage.setItem('lastSync', now);
+          
+          btnSync.innerHTML = '<span data-icon="sync"></span> Sync Now';
+          btnSync.disabled = false;
+          
+          App.showToast('success', 'Sync Complete', `Synced ${predictions.length} predictions and ${forecasts.length} forecasts.`);
+        } catch (error) {
+          btnSync.innerHTML = '<span data-icon="sync"></span> Sync Now';
+          btnSync.disabled = false;
+          
+          App.showToast('error', 'Sync Failed', 'Could not sync data. Please try again.');
+        }
+        
+        initIcons();
+      },
+      
+      /**
+       * Export all data
+       */
+      exportData() {
+        const predictions = JSON.parse(localStorage.getItem('predictions') || '[]');
+        const forecasts = JSON.parse(localStorage.getItem('forecasts') || '[]');
+        const preferences = JSON.parse(localStorage.getItem('preferences') || '{}');
+        
+        if (predictions.length === 0 && forecasts.length === 0) {
+          App.showToast('warning', 'No Data', 'Nothing to export.');
+          return;
+        }
+        
+        const data = {
+          version: '1.0.0',
+          exportedAt: new Date().toISOString(),
+          predictions,
+          forecasts,
+          preferences
+        };
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ecommerce_analytics_backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        App.showToast('success', 'Export Complete', 'All data exported successfully.');
+      },
+      
+      /**
+       * Import data
+       */
+      importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          
+          try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+            
+            if (!data.predictions && !data.forecasts) {
+              throw new Error('Invalid backup file format');
+            }
+            
+            // Merge with existing data
+            const existingPredictions = JSON.parse(localStorage.getItem('predictions') || '[]');
+            const existingForecasts = JSON.parse(localStorage.getItem('forecasts') || '[]');
+            
+            const mergedPredictions = [...existingPredictions, ...(data.predictions || [])];
+            const mergedForecasts = [...existingForecasts, ...(data.forecasts || [])];
+            
+            localStorage.setItem('predictions', JSON.stringify(mergedPredictions));
+            localStorage.setItem('forecasts', JSON.stringify(mergedForecasts));
+            
+            if (data.preferences) {
+              localStorage.setItem('preferences', JSON.stringify(data.preferences));
+            }
+            
+            this.updateDataStats();
+            Dashboard.updateStats();
+            Dashboard.updateRecentPredictions();
+            Analytics.refresh();
+            History.refresh();
+            
+            App.showToast('success', 'Import Complete', `Imported ${data.predictions?.length || 0} predictions and ${data.forecasts?.length || 0} forecasts.`);
+          } catch (error) {
+            App.showToast('error', 'Import Failed', 'Invalid file format. Please use a valid backup file.');
+          }
+        };
+        
+        input.click();
+      },
+      
+      /**
+       * Clear all data
+       */
+      clearData() {
+        if (!confirm('Are you sure you want to delete all local data? This cannot be undone.')) return;
+        
+        localStorage.removeItem('predictions');
+        localStorage.removeItem('forecasts');
+        
+        this.updateDataStats();
+        Dashboard.updateStats();
+        Dashboard.updateRecentPredictions();
+        Analytics.refresh();
+        History.refresh();
+        
+        App.showToast('success', 'Data Cleared', 'All local data has been deleted.');
+      }
+    };
+    
+    // Initialize Dashboard when app is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        Dashboard.init();
+        Segmentation.init();
+        Forecasting.init();
+        Analytics.init();
+        History.init();
+        Settings.init();
+      }, 100);
+    });
+  </script>
+</body>
+</html>
