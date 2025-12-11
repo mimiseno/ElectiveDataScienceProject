@@ -91,33 +91,33 @@ CLUSTER_DESCRIPTIONS = {
 
 CLUSTER_RECOMMENDATIONS = {
     0: [
-        "⭐ Implement loyalty rewards program",
-        "🎁 Early access to new products",
-        "💝 Birthday/anniversary special offers",
-        "📢 Request reviews and referrals",
-        "🎪 Invite to exclusive member events"
+        "Implement loyalty rewards program",
+        "Early access to new products",
+        "Birthday/anniversary special offers",
+        "Request reviews and referrals",
+        "Invite to exclusive member events"
     ],
     1: [
-        "📧 Send win-back email with special discount (20-30% off)",
-        "🎁 Offer exclusive 'we miss you' promotion",
-        "📱 Use retargeting ads on social media",
-        "💰 Provide loyalty points bonus for return",
-        "📊 Survey to understand why they left"
+        "Send win-back email with special discount (20-30% off)",
+        "Offer exclusive 'we miss you' promotion",
+        "Use retargeting ads on social media",
+        "Provide loyalty points bonus for return",
+        "Survey to understand why they left"
     ],
     2: [
-        "👑 VIP tier with exclusive benefits",
-        "💎 Premium customer service priority",
-        "🎪 Exclusive event invitations",
-        "💰 Upsell premium products",
-        "🎁 Surprise gifts and personalized offers",
-        "📢 Brand ambassador program invitation"
+        "VIP tier with exclusive benefits",
+        "Premium customer service priority",
+        "Exclusive event invitations",
+        "Upsell premium products",
+        "Surprise gifts and personalized offers",
+        "Brand ambassador program invitation"
     ],
     3: [
-        "⏰ Send reminder emails about new arrivals",
-        "🎯 Personalized product recommendations",
-        "🔔 Re-engage with limited-time offers",
-        "💝 First purchase anniversary celebration",
-        "📊 Survey to understand their needs"
+        "Send reminder emails about new arrivals",
+        "Personalized product recommendations",
+        "Re-engage with limited-time offers",
+        "First purchase anniversary celebration",
+        "Survey to understand their needs"
     ]
 }
 
@@ -127,7 +127,7 @@ CLUSTER_RECOMMENDATIONS = {
 INPUT_LIMITS = {
     'recency': {'min': 1, 'max': 400, 'unit': 'days'},
     'frequency': {'min': 1, 'max': 10, 'unit': 'purchases'},
-    'monetary': {'min': 500, 'max': 50000, 'unit': 'PHP'}  # ~R$50 to ~R$5000
+    'monetary': {'min': 0, 'max': 50000, 'unit': 'PHP'}  # ~R$0 to ~R$5000 (allows free/low-cost items)
 }
 
 
@@ -545,16 +545,157 @@ def get_models_info():
         return jsonify({'error': f'Error getting model info: {str(e)}'}), 500
 
 
+@app.route('/predict/segment/bulk', methods=['POST'])
+def predict_customer_segment_bulk():
+    """
+    Bulk predict customer segments using K-Means model (optimized for large datasets)
+    
+    Expected JSON payload:
+    {
+        "customers": [
+            {"customer_id": "CUST001", "recency": float, "frequency": float, "monetary": float},
+            {"customer_id": "CUST002", "recency": float, "frequency": float, "monetary": float},
+            ...
+        ]
+    }
+    
+    Returns:
+    {
+        "results": [
+            {"customer_id": "CUST001", "cluster": int, "cluster_name": str, "confidence": float, ...},
+            ...
+        ],
+        "total": int,
+        "success_count": int,
+        "error_count": int
+    }
+    """
+    try:
+        if kmeans_model is None or rfm_scaler is None:
+            return jsonify({'error': 'K-Means model or scaler not loaded'}), 500
+        
+        data = request.get_json()
+        
+        if 'customers' not in data:
+            return jsonify({'error': 'Missing required field: customers'}), 400
+        
+        customers = data['customers']
+        
+        if not isinstance(customers, list) or len(customers) == 0:
+            return jsonify({'error': 'customers must be a non-empty list'}), 400
+        
+        results = []
+        success_count = 0
+        error_count = 0
+        
+        # Process all customers in batch
+        for customer in customers:
+            try:
+                # Validate required fields
+                if not all(k in customer for k in ['customer_id', 'recency', 'frequency', 'monetary']):
+                    results.append({
+                        'customer_id': customer.get('customer_id', 'unknown'),
+                        'error': 'Missing required fields',
+                        'success': False
+                    })
+                    error_count += 1
+                    continue
+                
+                customer_id = customer['customer_id']
+                recency = float(customer['recency'])
+                frequency = float(customer['frequency'])
+                monetary_php = float(customer['monetary'])
+                
+                # Validate ranges
+                if recency < INPUT_LIMITS['recency']['min'] or recency > INPUT_LIMITS['recency']['max']:
+                    results.append({
+                        'customer_id': customer_id,
+                        'error': f"Recency out of range ({INPUT_LIMITS['recency']['min']}-{INPUT_LIMITS['recency']['max']})",
+                        'success': False
+                    })
+                    error_count += 1
+                    continue
+                
+                if frequency < INPUT_LIMITS['frequency']['min'] or frequency > INPUT_LIMITS['frequency']['max']:
+                    results.append({
+                        'customer_id': customer_id,
+                        'error': f"Frequency out of range ({INPUT_LIMITS['frequency']['min']}-{INPUT_LIMITS['frequency']['max']})",
+                        'success': False
+                    })
+                    error_count += 1
+                    continue
+                
+                if monetary_php < INPUT_LIMITS['monetary']['min'] or monetary_php > INPUT_LIMITS['monetary']['max']:
+                    results.append({
+                        'customer_id': customer_id,
+                        'error': f"Monetary out of range ({INPUT_LIMITS['monetary']['min']}-{INPUT_LIMITS['monetary']['max']})",
+                        'success': False
+                    })
+                    error_count += 1
+                    continue
+                
+                # Convert PHP to BRL
+                monetary_brl = monetary_php / BRL_TO_PHP
+                
+                # Create input and scale
+                X = np.array([[recency, frequency, monetary_brl]])
+                X_scaled = rfm_scaler.transform(X)
+                
+                # Predict cluster
+                cluster = int(kmeans_model.predict(X_scaled)[0])
+                
+                # Calculate confidence
+                centroids = kmeans_model.cluster_centers_
+                distances = cdist(X_scaled, centroids, metric='euclidean')[0]
+                assigned_distance = distances[cluster]
+                inv_distances = 1 / (distances + 1e-10)
+                confidence_scores = inv_distances / inv_distances.sum()
+                confidence = float(confidence_scores[cluster] * 100)
+                
+                results.append({
+                    'customer_id': customer_id,
+                    'cluster': cluster,
+                    'cluster_name': CLUSTER_NAMES.get(cluster, f'Cluster {cluster}'),
+                    'confidence': round(confidence, 2),
+                    'recency': recency,
+                    'frequency': frequency,
+                    'monetary': monetary_php,
+                    'monetary_brl': round(monetary_brl, 2),
+                    'success': True
+                })
+                success_count += 1
+                
+            except Exception as e:
+                results.append({
+                    'customer_id': customer.get('customer_id', 'unknown'),
+                    'error': str(e),
+                    'success': False
+                })
+                error_count += 1
+        
+        return jsonify({
+            'results': results,
+            'total': len(customers),
+            'success_count': success_count,
+            'error_count': error_count,
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Bulk prediction error: {str(e)}'}), 500
+
+
 if __name__ == '__main__':
     print("\n" + "="*70)
     print("🚀 E-commerce Analytics API Server")
     print("="*70)
     print(f"\n📊 API Base URL: http://localhost:5000")
     print(f"\n🔗 Endpoints:")
-    print(f"   GET  /health           - Health check")
-    print(f"   GET  /models/info      - Model information")
-    print(f"   POST /predict/segment  - Customer segmentation (K-Means)")
-    print(f"   POST /predict/forecast - Sales forecast (Prophet/XGBoost/Ensemble)")
+    print(f"   GET  /health                  - Health check")
+    print(f"   GET  /models/info             - Model information")
+    print(f"   POST /predict/segment         - Customer segmentation (single)")
+    print(f"   POST /predict/segment/bulk    - Customer segmentation (batch)")
+    print(f"   POST /predict/forecast        - Sales forecast (Prophet/XGBoost/Ensemble)")
     print(f"\n🤖 Models Loaded:")
     print(f"   ✅ K-Means:  {kmeans_model is not None}")
     print(f"   ✅ Prophet:  {prophet_model is not None}")
