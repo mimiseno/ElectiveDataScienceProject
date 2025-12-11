@@ -2,91 +2,173 @@
 
 import type React from "react"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Header } from "@/components/dashboard/header"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { TrendingUp, Calendar, DollarSign, ArrowUp, ArrowDown, Upload, FileSpreadsheet, X } from "lucide-react"
+import { TrendingUp, Calendar, DollarSign, ArrowUp, ArrowDown, Upload, FileSpreadsheet, X, AlertCircle, Lock, CheckCircle2 } from "lucide-react"
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, Line } from "recharts"
+
+interface ForecastResult {
+  ds: string
+  yhat: number
+  yhat_lower: number
+  yhat_upper: number
+  confidence: number
+}
+
+interface SalesSummary {
+  total_sales: number
+  total_orders: number
+  avg_daily_sales: number
+  avg_order_value: number
+  date_range: {
+    start: string
+    end: string
+    days: number
+  }
+}
 
 export default function ForecastPage() {
   const [startDate, setStartDate] = useState("")
   const [periods, setPeriods] = useState("7")
-  const [forecast, setForecast] = useState<any[] | null>(null)
+  const [forecast, setForecast] = useState<ForecastResult[] | null>(null)
+  const [forecastSummary, setForecastSummary] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [forecastError, setForecastError] = useState<string | null>(null)
 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
-  const [salesData, setSalesData] = useState<any[] | null>(null)
+  const [salesSummary, setSalesSummary] = useState<SalesSummary | null>(null)
   const [isProcessingSales, setIsProcessingSales] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  
+  // Workflow: Forecast is only enabled after sales data is uploaded
+  const isDataUploaded = salesSummary !== null
+  
+  // Minimum date for forecast (day after last data point)
+  const [minForecastDate, setMinForecastDate] = useState<string>("")
+  
+  // Auto-set forecast start date to day after last data point
+  useEffect(() => {
+    if (salesSummary?.date_range?.end) {
+      const endDate = new Date(salesSummary.date_range.end)
+      endDate.setDate(endDate.getDate() + 1) // Day after last data point
+      const minDate = endDate.toISOString().split('T')[0]
+      setMinForecastDate(minDate)
+      setStartDate(minDate)
+    }
+  }, [salesSummary])
 
   const handleForecast = async () => {
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    const start = new Date(startDate)
-    const mockForecast = Array.from({ length: Number.parseInt(periods) }, (_, i) => {
-      const date = new Date(start)
-      date.setDate(date.getDate() + i)
-      const baseValue = 50000 + Math.random() * 30000
-      const trend = i * 500
-      const seasonal = Math.sin((i / 7) * Math.PI) * 5000
-      const predicted = baseValue + trend + seasonal
-
-      return {
-        date: date.toISOString().split("T")[0],
-        predicted: Math.round(predicted),
-        lower: Math.round(predicted * 0.85),
-        upper: Math.round(predicted * 1.15),
+    setForecastError(null)
+    
+    // Validate start date is after uploaded data
+    if (minForecastDate && startDate < minForecastDate) {
+      setForecastError(`Start date must be on or after ${minForecastDate} (after your uploaded data ends)`)
+      setIsLoading(false)
+      return
+    }
+    
+    try {
+      const response = await fetch('/api/forecast/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          start_date: startDate,
+          periods: Number(periods),
+          model: 'ensemble'
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok || !data.success) {
+        setForecastError(data.error || 'Failed to generate forecast')
+        setForecast(null)
+        setForecastSummary(null)
+        return
       }
-    })
-
-    setForecast(mockForecast)
-    setIsLoading(false)
+      
+      // Map API response to chart format
+      const forecastData = data.forecast.map((f: ForecastResult) => ({
+        date: f.ds,
+        predicted: Math.round(f.yhat),
+        lower: Math.round(f.yhat_lower),
+        upper: Math.round(f.yhat_upper),
+        confidence: f.confidence
+      }))
+      
+      setForecast(forecastData)
+      setForecastSummary(data.summary)
+      
+    } catch (error) {
+      console.error('Forecast error:', error)
+      setForecastError(error instanceof Error ? error.message : 'Network error')
+      setForecast(null)
+      setForecastSummary(null)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setUploadedFile(file)
-      setSalesData(null)
+      setSalesSummary(null)
+      setForecast(null)
+      setForecastSummary(null)
+      setUploadError(null)
     }
   }, [])
 
   const handleRemoveFile = () => {
     setUploadedFile(null)
-    setSalesData(null)
+    setSalesSummary(null)
+    setForecast(null)
+    setForecastSummary(null)
+    setStartDate("")
   }
 
   const handleProcessSales = async () => {
     if (!uploadedFile) return
 
     setIsProcessingSales(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    // Simulated historical sales data
-    setSalesData([
-      { month: "Jan", sales: 45000, orders: 180 },
-      { month: "Feb", sales: 52000, orders: 210 },
-      { month: "Mar", sales: 48000, orders: 195 },
-      { month: "Apr", sales: 61000, orders: 245 },
-      { month: "May", sales: 55000, orders: 220 },
-      { month: "Jun", sales: 67000, orders: 270 },
-      { month: "Jul", sales: 72000, orders: 290 },
-      { month: "Aug", sales: 69000, orders: 275 },
-      { month: "Sep", sales: 78000, orders: 310 },
-      { month: "Oct", sales: 85000, orders: 340 },
-      { month: "Nov", sales: 92000, orders: 370 },
-      { month: "Dec", sales: 98000, orders: 395 },
-    ])
-    setIsProcessingSales(false)
+    setUploadError(null)
+    
+    try {
+      const formData = new FormData()
+      formData.append('file', uploadedFile)
+      
+      const response = await fetch('/api/sales/bulk-upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok || !data.success) {
+        setUploadError(data.error || 'Failed to process sales data')
+        setSalesSummary(null)
+        return
+      }
+      
+      setSalesSummary(data.summary)
+      
+    } catch (error) {
+      console.error('Sales upload error:', error)
+      setUploadError(error instanceof Error ? error.message : 'Network error')
+      setSalesSummary(null)
+    } finally {
+      setIsProcessingSales(false)
+    }
   }
 
   const totalPredicted = forecast?.reduce((sum, d) => sum + d.predicted, 0) || 0
   const avgDaily = forecast ? totalPredicted / forecast.length : 0
-  const totalSales = salesData?.reduce((sum, d) => sum + d.sales, 0) || 0
-  const avgMonthlySales = salesData ? totalSales / salesData.length : 0
 
   return (
     <div className="flex flex-col h-full">
@@ -124,7 +206,7 @@ export default function ForecastPage() {
                     </label>
                   </Button>
                   <p className="text-xs text-muted-foreground mt-4">
-                    Required columns: date, sales_amount, order_count
+                    Supported formats: (1) date, sales_amount, order_count OR (2) InvoiceNo, Quantity, InvoiceDate, UnitPrice
                   </p>
                 </div>
               ) : (
@@ -150,10 +232,25 @@ export default function ForecastPage() {
           </CardContent>
         </Card>
 
-        {salesData && (
+        {/* Upload Error Display */}
+        {uploadError && (
+          <Card className="bg-destructive/10 border-destructive">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-destructive" />
+                <div>
+                  <p className="text-sm font-medium text-destructive">Upload Failed</p>
+                  <p className="text-sm text-destructive/80">{uploadError}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {salesSummary && (
           <>
             {/* Sales Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card className="bg-card border-border">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
@@ -162,7 +259,7 @@ export default function ForecastPage() {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Total Revenue</p>
-                      <p className="text-2xl font-bold text-foreground">PHP {totalSales.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-foreground">PHP {salesSummary.total_sales.toLocaleString()}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -175,9 +272,9 @@ export default function ForecastPage() {
                       <TrendingUp className="w-6 h-6 text-chart-2" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Avg. Monthly Sales</p>
+                      <p className="text-sm text-muted-foreground">Avg. Daily Sales</p>
                       <p className="text-2xl font-bold text-foreground">
-                        PHP {Math.round(avgMonthlySales).toLocaleString()}
+                        PHP {salesSummary.avg_daily_sales.toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -192,73 +289,64 @@ export default function ForecastPage() {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Data Period</p>
-                      <p className="text-2xl font-bold text-foreground">{salesData.length} months</p>
+                      <p className="text-2xl font-bold text-foreground">{salesSummary.date_range.days} days</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {salesSummary.date_range.start} to {salesSummary.date_range.end}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-chart-4/10 flex items-center justify-center">
+                      <FileSpreadsheet className="w-6 h-6 text-chart-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Orders</p>
+                      <p className="text-2xl font-bold text-foreground">{salesSummary.total_orders.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Avg: PHP {salesSummary.avg_order_value.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
-
-            {/* Sales Overview Chart */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-foreground">Sales Overview</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Historical sales performance from your uploaded dataset
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={salesData}>
-                      <defs>
-                        <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis dataKey="month" stroke="var(--muted-foreground)" fontSize={12} />
-                      <YAxis
-                        stroke="var(--muted-foreground)"
-                        fontSize={12}
-                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "var(--card)",
-                          border: "1px solid var(--border)",
-                          borderRadius: "8px",
-                          color: "var(--foreground)",
-                        }}
-                        formatter={(value: number) => [`PHP ${value.toLocaleString()}`, "Sales"]}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="sales"
-                        stroke="var(--chart-1)"
-                        fill="url(#salesGradient)"
-                        strokeWidth={2}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
           </>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Forecast Input Form */}
-          <Card className="bg-card border-border">
+          <Card className={`bg-card border-border ${!isDataUploaded ? 'opacity-60' : ''}`}>
             <CardHeader>
               <CardTitle className="text-foreground flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-primary" />
+                {isDataUploaded ? (
+                  <CheckCircle2 className="w-5 h-5 text-success" />
+                ) : (
+                  <Lock className="w-5 h-5 text-muted-foreground" />
+                )}
                 Forecast Parameters
               </CardTitle>
-              <CardDescription className="text-muted-foreground">Configure the prediction timeframe</CardDescription>
+              <CardDescription className="text-muted-foreground">
+                {isDataUploaded 
+                  ? `Forecast based on ${salesSummary?.date_range.days} days of uploaded data`
+                  : "Upload sales data first to enable forecasting"
+                }
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {!isDataUploaded && (
+                <div className="p-4 bg-muted/50 rounded-lg border border-dashed border-border text-center">
+                  <Lock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Upload and analyze your sales CSV file above to unlock forecasting
+                  </p>
+                </div>
+              )}
+              
               <div className="space-y-2">
                 <Label htmlFor="startDate" className="text-foreground">
                   Start Date
@@ -267,9 +355,16 @@ export default function ForecastPage() {
                   id="startDate"
                   type="date"
                   value={startDate}
+                  min={minForecastDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   className="bg-input border-border text-foreground"
+                  disabled={!isDataUploaded}
                 />
+                {isDataUploaded && salesSummary && (
+                  <p className="text-xs text-muted-foreground">
+                    Your data ends on {salesSummary.date_range.end}. Forecast must start from {minForecastDate} or later.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -284,13 +379,24 @@ export default function ForecastPage() {
                   value={periods}
                   onChange={(e) => setPeriods(e.target.value)}
                   className="bg-input border-border text-foreground"
+                  disabled={!isDataUploaded}
                 />
                 <p className="text-xs text-muted-foreground">Range: 1-90 days</p>
               </div>
 
-              <Button onClick={handleForecast} disabled={!startDate || !periods || isLoading} className="w-full">
+              <Button 
+                onClick={handleForecast} 
+                disabled={!isDataUploaded || !startDate || !periods || isLoading} 
+                className="w-full"
+              >
                 {isLoading ? "Generating Forecast..." : "Generate Forecast"}
               </Button>
+
+              {forecastError && (
+                <div className="p-3 bg-destructive/10 border border-destructive rounded-lg">
+                  <p className="text-sm text-destructive">{forecastError}</p>
+                </div>
+              )}
 
               <div className="p-4 bg-muted/30 rounded-lg">
                 <h4 className="text-sm font-medium text-foreground mb-2">Model Info</h4>
@@ -298,6 +404,9 @@ export default function ForecastPage() {
                   <p>Prophet: 60% weight (seasonality)</p>
                   <p>XGBoost: 40% weight (patterns)</p>
                   <p>Training data: Olist 2016-2018</p>
+                  {forecastSummary && (
+                    <p className="text-chart-1 mt-2">Model: {forecastSummary.model_used || 'Ensemble'}</p>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -360,10 +469,29 @@ export default function ForecastPage() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-80 text-center">
-                  <TrendingUp className="w-12 h-12 text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">
-                    Configure parameters and generate a forecast to see predictions
-                  </p>
+                  {!isDataUploaded ? (
+                    <>
+                      <Upload className="w-12 h-12 text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground font-medium mb-2">
+                        Step 1: Upload Your Sales Data
+                      </p>
+                      <p className="text-sm text-muted-foreground max-w-md">
+                        Upload a CSV file with your historical sales data above. 
+                        The AI model will analyze your data patterns to generate accurate forecasts.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp className="w-12 h-12 text-primary mb-4" />
+                      <p className="text-foreground font-medium mb-2">
+                        Step 2: Generate Your Forecast
+                      </p>
+                      <p className="text-sm text-muted-foreground max-w-md">
+                        Your sales data is ready! Configure the forecast parameters on the left 
+                        and click "Generate Forecast" to see predictions.
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -371,8 +499,8 @@ export default function ForecastPage() {
         </div>
 
         {/* Forecast Summary Stats */}
-        {forecast && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {forecast && forecastSummary && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="bg-card border-border">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
@@ -381,7 +509,7 @@ export default function ForecastPage() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Predicted</p>
-                    <p className="text-2xl font-bold text-foreground">PHP {totalPredicted.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-foreground">PHP {forecastSummary.total_projected.toLocaleString()}</p>
                   </div>
                 </div>
               </CardContent>
@@ -395,7 +523,7 @@ export default function ForecastPage() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Daily Average</p>
-                    <p className="text-2xl font-bold text-foreground">PHP {Math.round(avgDaily).toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-foreground">PHP {Math.round(forecastSummary.avg_daily_sales).toLocaleString()}</p>
                   </div>
                 </div>
               </CardContent>
@@ -409,7 +537,22 @@ export default function ForecastPage() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Forecast Period</p>
-                    <p className="text-2xl font-bold text-foreground">{forecast.length} days</p>
+                    <p className="text-2xl font-bold text-foreground">{forecastSummary.periods} days</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-chart-4/10 flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-chart-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Avg. Confidence</p>
+                    <p className="text-2xl font-bold text-foreground">{forecastSummary.avg_confidence.toFixed(1)}%</p>
+                    <p className="text-xs text-muted-foreground mt-1">{forecastSummary.uncertainty_range}</p>
                   </div>
                 </div>
               </CardContent>

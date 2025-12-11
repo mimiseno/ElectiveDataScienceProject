@@ -23,7 +23,7 @@ export function Header({ title, description }: HeaderProps) {
   const { user, logout, isAdmin } = useAuth()
 
   return (
-    <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm px-6 flex items-center justify-between">
+    <header className="h-16 border-b border-border bg-card/95 backdrop-blur-sm px-6 flex items-center justify-between sticky top-0 z-50">
       <div>
         <h1 className="text-xl font-semibold text-foreground">{title}</h1>
         {description && <p className="text-sm text-muted-foreground">{description}</p>}

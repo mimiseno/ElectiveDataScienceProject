@@ -59,29 +59,29 @@
     - Generate recommendations
     - Log activity
 
-- [ ] **5. Sales Forecasting** - `app/dashboard/forecast/page.tsx`
+- [x] **5. Sales Forecasting** - `app/dashboard/forecast/page.tsx`
   - **Database Tables:**
-    - `sales` - Historical sales data
-    - `sales_forecasts` - Store predictions
-    - `dataset_uploads` - Track sales CSV uploads
+    - `sales` - Historical sales data ✅
+    - `sales_forecasts` - Store predictions ✅
+    - `dataset_uploads` - Track sales CSV uploads ✅
     - `v_monthly_sales` - Sales summary view
-    - `activity_logs` - Log forecast actions
+    - `activity_logs` - Log forecast actions ✅
   - **Features:**
-    - Single forecast generation
-    - Historical sales upload
-    - Forecast visualization
-    - Confidence intervals
-  - **AI Models:** Prophet + XGBoost Ensemble (Flask `/predict/forecast`)
+    - Single forecast generation ✅
+    - Historical sales upload ✅
+    - Forecast visualization ✅
+    - Confidence intervals ✅
+  - **AI Models:** Prophet + XGBoost Ensemble (Flask `/predict/forecast`) ✅
   - **API Needed:**
-    - POST `/api/forecast/generate`
-    - POST `/api/sales/bulk-upload`
-    - GET `/api/sales/historical`
-    - GET `/api/forecast/history`
+    - POST `/api/forecast/generate` ✅
+    - POST `/api/sales/bulk-upload` ✅
+    - GET `/api/sales/historical` (optional)
+    - GET `/api/forecast/history` ✅
   - **Integration:**
-    - Connect to Flask ensemble API
-    - Save predictions to Supabase
-    - Display historical trends
-    - Log activity
+    - Connect to Flask ensemble API ✅
+    - Save predictions to Supabase ✅
+    - Display historical trends ✅
+    - Log activity ✅
 
 - [ ] **6. User Management** - `app/dashboard/users/page.tsx`
   - **Database Tables:**
@@ -240,14 +240,14 @@
 16. [ ] Add activity logging
 17. [ ] Test single & bulk analysis
 
-### Phase 4: Sales Forecasting
-18. [ ] Create API route: `app/api/forecast/generate/route.ts`
-19. [ ] Connect to Flask ensemble API
-20. [ ] Save forecasts to `sales_forecasts` table
-21. [ ] Implement historical sales upload
-22. [ ] Create sales visualization queries
-23. [ ] Add activity logging
-24. [ ] Test forecast generation
+### Phase 4: Sales Forecasting ✅
+18. [x] Create API route: `app/api/forecast/generate/route.ts`
+19. [x] Connect to Flask ensemble API
+20. [x] Save forecasts to `sales_forecasts` table
+21. [x] Implement historical sales upload
+22. [x] Create sales visualization queries
+23. [x] Add activity logging
+24. [x] Test forecast generation
 
 ### Phase 5: Dashboard & Stats
 25. [ ] Create dashboard stats API
