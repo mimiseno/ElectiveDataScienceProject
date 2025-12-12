@@ -274,5 +274,30 @@ id_rsa.pub
 # COMMANDS.md
 
 # ================================================================
+# ADDITIONAL COMMON IGNORES
+# ================================================================
+
+# Supabase local
+.supabase/
+supabase/.temp/
+
+# Excel temporary files
+~$*.xlsx
+~$*.xls
+
+# Large data files (if generated)
+*.parquet
+*.feather
+*.h5
+*.hdf5
+
+# Prophet model artifacts
+*.stan
+cmdstanpy/
+
+# VS Code workspace files
+*.code-workspace
+
+# ================================================================
 # END OF .GITIGNORE
 # ================================================================
