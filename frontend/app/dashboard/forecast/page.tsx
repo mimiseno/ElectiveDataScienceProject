@@ -19,6 +19,24 @@ interface ForecastResult {
   confidence: number
 }
 
+interface ForecastChartData {
+  date: string
+  predicted: number
+  lower: number
+  upper: number
+  confidence: number
+}
+
+interface ForecastSummary {
+  avg_daily_sales: number
+  total_projected: number
+  avg_confidence: number
+  uncertainty_range: string
+  periods: number
+  start_date: string
+  model_used?: string
+}
+
 interface SalesSummary {
   total_sales: number
   total_orders: number
@@ -34,8 +52,8 @@ interface SalesSummary {
 export default function ForecastPage() {
   const [startDate, setStartDate] = useState("")
   const [periods, setPeriods] = useState("7")
-  const [forecast, setForecast] = useState<ForecastResult[] | null>(null)
-  const [forecastSummary, setForecastSummary] = useState<any>(null)
+  const [forecast, setForecast] = useState<ForecastChartData[] | null>(null)
+  const [forecastSummary, setForecastSummary] = useState<ForecastSummary | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [forecastError, setForecastError] = useState<string | null>(null)
 
@@ -166,9 +184,6 @@ export default function ForecastPage() {
       setIsProcessingSales(false)
     }
   }
-
-  const totalPredicted = forecast?.reduce((sum, d) => sum + d.predicted, 0) || 0
-  const avgDaily = forecast ? totalPredicted / forecast.length : 0
 
   return (
     <div className="flex flex-col h-full">
