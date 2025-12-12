@@ -33,6 +33,12 @@ export default function RegisterPage() {
     e.preventDefault()
     setError("")
 
+    // Client-side validation
+    if (!name.trim()) {
+      setError("Name is required")
+      return
+    }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match")
       return
@@ -43,14 +49,30 @@ export default function RegisterPage() {
       return
     }
 
-    setIsLoading(true)
-    const success = await register(email, password, name)
-    if (success) {
-      router.push("/dashboard")
-    } else {
-      setError("Email already exists")
+    if (!/\d/.test(password)) {
+      setError("Password must contain at least one number")
+      return
     }
-    setIsLoading(false)
+
+    if (!/[A-Z]/.test(password)) {
+      setError("Password must contain at least one uppercase letter")
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const result = await register(email, password, name)
+      if (result.success) {
+        router.push("/dashboard")
+      } else {
+        setError(result.error || "Registration failed. Please try again.")
+      }
+    } catch (error) {
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

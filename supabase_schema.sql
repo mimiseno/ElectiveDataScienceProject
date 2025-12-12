@@ -21,7 +21,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ================================================================
 
 -- Users table (extends Supabase auth.users)
-CREATE TABLE public.users (
+CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -34,16 +34,16 @@ CREATE TABLE public.users (
 );
 
 -- Indexes for users
-CREATE INDEX idx_users_email ON public.users(email);
-CREATE INDEX idx_users_role ON public.users(role);
-CREATE INDEX idx_users_status ON public.users(status);
+CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON public.users(role);
+CREATE INDEX IF NOT EXISTS idx_users_status ON public.users(status);
 
 -- ================================================================
 -- 2. CUSTOMER DATA & SEGMENTATION
 -- ================================================================
 
 -- Customers table (RFM data)
-CREATE TABLE public.customers (
+CREATE TABLE IF NOT EXISTS public.customers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     customer_external_id VARCHAR(100) UNIQUE NOT NULL, -- External customer ID from uploaded dataset
     recency INTEGER NOT NULL CHECK (recency >= 0), -- Days since last purchase
@@ -60,17 +60,17 @@ CREATE TABLE public.customers (
 );
 
 -- Indexes for customers
-CREATE INDEX idx_customers_external_id ON public.customers(customer_external_id);
-CREATE INDEX idx_customers_segment ON public.customers(segment_cluster);
-CREATE INDEX idx_customers_segment_name ON public.customers(segment_name);
-CREATE INDEX idx_customers_created_by ON public.customers(created_by);
+CREATE INDEX IF NOT EXISTS idx_customers_external_id ON public.customers(customer_external_id);
+CREATE INDEX IF NOT EXISTS idx_customers_segment ON public.customers(segment_cluster);
+CREATE INDEX IF NOT EXISTS idx_customers_segment_name ON public.customers(segment_name);
+CREATE INDEX IF NOT EXISTS idx_customers_created_by ON public.customers(created_by);
 
 -- ================================================================
 -- 3. SALES DATA & FORECASTING
 -- ================================================================
 
 -- Sales transactions table
-CREATE TABLE public.sales (
+CREATE TABLE IF NOT EXISTS public.sales (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     transaction_id VARCHAR(100) UNIQUE NOT NULL, -- External transaction ID
     customer_id UUID REFERENCES public.customers(id) ON DELETE SET NULL,
@@ -85,13 +85,13 @@ CREATE TABLE public.sales (
 );
 
 -- Indexes for sales
-CREATE INDEX idx_sales_date ON public.sales(sale_date);
-CREATE INDEX idx_sales_customer ON public.sales(customer_id);
-CREATE INDEX idx_sales_transaction ON public.sales(transaction_id);
-CREATE INDEX idx_sales_category ON public.sales(product_category);
+CREATE INDEX IF NOT EXISTS idx_sales_date ON public.sales(sale_date);
+CREATE INDEX IF NOT EXISTS idx_sales_customer ON public.sales(customer_id);
+CREATE INDEX IF NOT EXISTS idx_sales_transaction ON public.sales(transaction_id);
+CREATE INDEX IF NOT EXISTS idx_sales_category ON public.sales(product_category);
 
 -- Sales forecasts table
-CREATE TABLE public.sales_forecasts (
+CREATE TABLE IF NOT EXISTS public.sales_forecasts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     forecast_date DATE NOT NULL,
     predicted_amount DECIMAL(12, 2) NOT NULL CHECK (predicted_amount >= 0),
@@ -106,17 +106,17 @@ CREATE TABLE public.sales_forecasts (
 );
 
 -- Indexes for forecasts
-CREATE INDEX idx_forecasts_date ON public.sales_forecasts(forecast_date);
-CREATE INDEX idx_forecasts_created_by ON public.sales_forecasts(created_by);
-CREATE INDEX idx_forecasts_model ON public.sales_forecasts(model_used);
-CREATE INDEX idx_forecasts_generated_at ON public.sales_forecasts(generated_at);
+CREATE INDEX IF NOT EXISTS idx_forecasts_date ON public.sales_forecasts(forecast_date);
+CREATE INDEX IF NOT EXISTS idx_forecasts_created_by ON public.sales_forecasts(created_by);
+CREATE INDEX IF NOT EXISTS idx_forecasts_model ON public.sales_forecasts(model_used);
+CREATE INDEX IF NOT EXISTS idx_forecasts_generated_at ON public.sales_forecasts(generated_at);
 
 -- ================================================================
 -- 4. DATASET UPLOADS & PROCESSING
 -- ================================================================
 
 -- Uploaded datasets tracking
-CREATE TABLE public.dataset_uploads (
+CREATE TABLE IF NOT EXISTS public.dataset_uploads (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     filename VARCHAR(255) NOT NULL,
     file_size_kb DECIMAL(10, 2) NOT NULL,
@@ -133,17 +133,17 @@ CREATE TABLE public.dataset_uploads (
 );
 
 -- Indexes for uploads
-CREATE INDEX idx_uploads_status ON public.dataset_uploads(processing_status);
-CREATE INDEX idx_uploads_type ON public.dataset_uploads(dataset_type);
-CREATE INDEX idx_uploads_user ON public.dataset_uploads(uploaded_by);
-CREATE INDEX idx_uploads_date ON public.dataset_uploads(uploaded_at);
+CREATE INDEX IF NOT EXISTS idx_uploads_status ON public.dataset_uploads(processing_status);
+CREATE INDEX IF NOT EXISTS idx_uploads_type ON public.dataset_uploads(dataset_type);
+CREATE INDEX IF NOT EXISTS idx_uploads_user ON public.dataset_uploads(uploaded_by);
+CREATE INDEX IF NOT EXISTS idx_uploads_date ON public.dataset_uploads(uploaded_at);
 
 -- ================================================================
 -- 5. ACTIVITY LOGGING & AUDIT TRAIL
 -- ================================================================
 
 -- System activity log
-CREATE TABLE public.activity_logs (
+CREATE TABLE IF NOT EXISTS public.activity_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
     activity_type VARCHAR(50) NOT NULL, -- 'login', 'logout', 'segment_analysis', 'forecast_generated', etc.
@@ -156,18 +156,18 @@ CREATE TABLE public.activity_logs (
 );
 
 -- Indexes for activity logs
-CREATE INDEX idx_activity_user ON public.activity_logs(user_id);
-CREATE INDEX idx_activity_type ON public.activity_logs(activity_type);
-CREATE INDEX idx_activity_category ON public.activity_logs(activity_category);
-CREATE INDEX idx_activity_created_at ON public.activity_logs(created_at);
-CREATE INDEX idx_activity_metadata ON public.activity_logs USING GIN (metadata);
+CREATE INDEX IF NOT EXISTS idx_activity_user ON public.activity_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_activity_type ON public.activity_logs(activity_type);
+CREATE INDEX IF NOT EXISTS idx_activity_category ON public.activity_logs(activity_category);
+CREATE INDEX IF NOT EXISTS idx_activity_created_at ON public.activity_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_activity_metadata ON public.activity_logs USING GIN (metadata);
 
 -- ================================================================
 -- 6. SEGMENTATION RESULTS & ANALYTICS
 -- ================================================================
 
 -- Customer segment distributions (for dashboard stats)
-CREATE TABLE public.segment_distributions (
+CREATE TABLE IF NOT EXISTS public.segment_distributions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     upload_id UUID REFERENCES public.dataset_uploads(id) ON DELETE CASCADE,
     segment_cluster INTEGER NOT NULL CHECK (segment_cluster BETWEEN 0 AND 3),
@@ -182,16 +182,16 @@ CREATE TABLE public.segment_distributions (
 );
 
 -- Indexes for segment distributions
-CREATE INDEX idx_segment_dist_upload ON public.segment_distributions(upload_id);
-CREATE INDEX idx_segment_dist_cluster ON public.segment_distributions(segment_cluster);
-CREATE INDEX idx_segment_dist_created_by ON public.segment_distributions(created_by);
+CREATE INDEX IF NOT EXISTS idx_segment_dist_upload ON public.segment_distributions(upload_id);
+CREATE INDEX IF NOT EXISTS idx_segment_dist_cluster ON public.segment_distributions(segment_cluster);
+CREATE INDEX IF NOT EXISTS idx_segment_dist_created_by ON public.segment_distributions(created_by);
 
 -- ================================================================
 -- 7. SYSTEM STATISTICS & METRICS
 -- ================================================================
 
 -- Dashboard statistics (cached/aggregated)
-CREATE TABLE public.dashboard_stats (
+CREATE TABLE IF NOT EXISTS public.dashboard_stats (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     stat_type VARCHAR(50) NOT NULL UNIQUE, -- 'total_users', 'active_users', 'segments_today', etc.
     stat_value DECIMAL(12, 2) NOT NULL,
@@ -201,15 +201,15 @@ CREATE TABLE public.dashboard_stats (
 );
 
 -- Indexes for stats
-CREATE INDEX idx_stats_type ON public.dashboard_stats(stat_type);
-CREATE INDEX idx_stats_updated ON public.dashboard_stats(last_updated_at);
+CREATE INDEX IF NOT EXISTS idx_stats_type ON public.dashboard_stats(stat_type);
+CREATE INDEX IF NOT EXISTS idx_stats_updated ON public.dashboard_stats(last_updated_at);
 
 -- ================================================================
 -- 8. RECOMMENDATIONS & INSIGHTS
 -- ================================================================
 
 -- Customer recommendations (AI-generated)
-CREATE TABLE public.customer_recommendations (
+CREATE TABLE IF NOT EXISTS public.customer_recommendations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     customer_id UUID REFERENCES public.customers(id) ON DELETE CASCADE,
     segment_cluster INTEGER NOT NULL CHECK (segment_cluster BETWEEN 0 AND 3),
@@ -221,10 +221,10 @@ CREATE TABLE public.customer_recommendations (
 );
 
 -- Indexes for recommendations
-CREATE INDEX idx_recommendations_customer ON public.customer_recommendations(customer_id);
-CREATE INDEX idx_recommendations_segment ON public.customer_recommendations(segment_cluster);
-CREATE INDEX idx_recommendations_type ON public.customer_recommendations(recommendation_type);
-CREATE INDEX idx_recommendations_priority ON public.customer_recommendations(priority);
+CREATE INDEX IF NOT EXISTS idx_recommendations_customer ON public.customer_recommendations(customer_id);
+CREATE INDEX IF NOT EXISTS idx_recommendations_segment ON public.customer_recommendations(segment_cluster);
+CREATE INDEX IF NOT EXISTS idx_recommendations_type ON public.customer_recommendations(recommendation_type);
+CREATE INDEX IF NOT EXISTS idx_recommendations_priority ON public.customer_recommendations(priority);
 
 -- ================================================================
 -- 9. ROW LEVEL SECURITY (RLS) POLICIES
@@ -242,15 +242,18 @@ ALTER TABLE public.dashboard_stats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customer_recommendations ENABLE ROW LEVEL SECURITY;
 
 -- Users: Admins can see all, users can only see themselves
+DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
 CREATE POLICY "Users can view own profile" ON public.users
     FOR SELECT USING (
         auth.uid() = id OR 
         (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin'
     );
 
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
 CREATE POLICY "Users can update own profile" ON public.users
     FOR UPDATE USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Admins can manage all users" ON public.users;
 CREATE POLICY "Admins can manage all users" ON public.users
     FOR ALL USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
 
@@ -333,12 +336,15 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply updated_at trigger to tables
+DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_customers_updated_at ON public.customers;
 CREATE TRIGGER update_customers_updated_at BEFORE UPDATE ON public.customers
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_sales_updated_at ON public.sales;
 CREATE TRIGGER update_sales_updated_at BEFORE UPDATE ON public.sales
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 

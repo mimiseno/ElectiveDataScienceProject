@@ -26,13 +26,18 @@ export default function LoginPage() {
     setError("")
     setIsLoading(true)
 
-    const success = await login(email, password)
-    if (success) {
-      router.push("/dashboard")
-    } else {
-      setError("Invalid email or password")
+    try {
+      const result = await login(email, password)
+      if (result.success) {
+        router.push("/dashboard")
+      } else {
+        setError(result.error || "Invalid email or password")
+      }
+    } catch (error) {
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   return (
@@ -110,15 +115,9 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6 p-4 bg-muted/30 rounded-lg">
-            <p className="text-xs text-muted-foreground mb-2">Demo credentials:</p>
-            <div className="text-xs space-y-1">
-              <p className="text-foreground">
-                <span className="text-muted-foreground">Admin:</span> admin@analytix.com / admin123
-              </p>
-              <p className="text-foreground">
-                <span className="text-muted-foreground">User:</span> user@analytix.com / user123
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground mb-2">
+              New user? Register to create your account and start analyzing data.
+            </p>
           </div>
         </CardContent>
       </Card>
