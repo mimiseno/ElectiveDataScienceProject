@@ -21,7 +21,7 @@ export default function ProfilePage() {
       <div className="flex-1 p-6 space-y-6 overflow-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Card */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardContent className="p-6">
               <div className="flex flex-col items-center text-center">
                 <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center mb-4">
@@ -44,7 +44,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Edit Profile */}
-          <Card className="lg:col-span-2 bg-card border-border">
+          <Card className="lg:col-span-2 bg-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-foreground">Edit Profile</CardTitle>
               <CardDescription className="text-muted-foreground">Update your account information</CardDescription>
@@ -82,7 +82,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-border">
+              <div className="pt-4">
                 <Button className="gap-2">
                   <Save className="w-4 h-4" />
                   Save Changes
@@ -93,7 +93,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Account Info */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground">Account Information</CardTitle>
             <CardDescription className="text-muted-foreground">Your account details and permissions</CardDescription>
@@ -126,7 +126,7 @@ export default function ProfilePage() {
         </Card>
 
         {/* Permissions */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground">Permissions</CardTitle>
             <CardDescription className="text-muted-foreground">Your access level and capabilities</CardDescription>

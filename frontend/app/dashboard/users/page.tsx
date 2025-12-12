@@ -207,7 +207,7 @@ export default function UsersPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-chart-1/10 flex items-center justify-center">
@@ -226,7 +226,7 @@ export default function UsersPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
@@ -245,7 +245,7 @@ export default function UsersPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -264,7 +264,7 @@ export default function UsersPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
@@ -286,7 +286,7 @@ export default function UsersPage() {
         </div>
 
         {/* Users Table */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -320,7 +320,7 @@ export default function UsersPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border">
+                    <tr className="">
                       <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">User</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Role</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
@@ -331,7 +331,7 @@ export default function UsersPage() {
                   </thead>
                   <tbody>
                     {filteredUsers.map((user) => (
-                      <tr key={user.id} className="border-b border-border/50 hover:bg-muted/20">
+                      <tr key={user.id} className="hover:bg-muted/20">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">

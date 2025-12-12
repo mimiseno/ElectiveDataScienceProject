@@ -190,7 +190,7 @@ export default function ForecastPage() {
       <Header title="Sales Forecasting" description="Prophet + XGBoost ensemble model predictions" />
 
       <div className="flex-1 p-6 space-y-6 overflow-auto">
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
               <Upload className="w-5 h-5 text-primary" />
@@ -249,7 +249,7 @@ export default function ForecastPage() {
 
         {/* Upload Error Display */}
         {uploadError && (
-          <Card className="bg-destructive/10 border-destructive">
+          <Card className="bg-destructive/10 border-0 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-destructive" />
@@ -266,7 +266,7 @@ export default function ForecastPage() {
           <>
             {/* Sales Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="bg-card border-border">
+              <Card className="bg-card border-0 shadow-none">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-lg bg-chart-1/10 flex items-center justify-center">
@@ -280,7 +280,7 @@ export default function ForecastPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-card border-border">
+              <Card className="bg-card border-0 shadow-none">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-lg bg-chart-2/10 flex items-center justify-center">
@@ -296,7 +296,7 @@ export default function ForecastPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-card border-border">
+              <Card className="bg-card border-0 shadow-none">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-lg bg-chart-3/10 flex items-center justify-center">
@@ -313,7 +313,7 @@ export default function ForecastPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-card border-border">
+              <Card className="bg-card border-0 shadow-none">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-lg bg-chart-4/10 flex items-center justify-center">
@@ -335,7 +335,7 @@ export default function ForecastPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Forecast Input Form */}
-          <Card className={`bg-card border-border ${!isDataUploaded ? 'opacity-60' : ''}`}>
+          <Card className={`bg-card border-0 shadow-none ${!isDataUploaded ? 'opacity-60' : ''}`}>
             <CardHeader>
               <CardTitle className="text-foreground flex items-center gap-2">
                 {isDataUploaded ? (
@@ -428,7 +428,7 @@ export default function ForecastPage() {
           </Card>
 
           {/* Forecast Chart */}
-          <Card className="lg:col-span-2 bg-card border-border">
+          <Card className="lg:col-span-2 bg-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-foreground">Forecast Visualization</CardTitle>
               <CardDescription className="text-muted-foreground">
@@ -516,7 +516,7 @@ export default function ForecastPage() {
         {/* Forecast Summary Stats */}
         {forecast && forecastSummary && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-0 shadow-none">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-lg bg-chart-1/10 flex items-center justify-center">
@@ -530,7 +530,7 @@ export default function ForecastPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-0 shadow-none">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-lg bg-chart-2/10 flex items-center justify-center">
@@ -544,7 +544,7 @@ export default function ForecastPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-0 shadow-none">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-lg bg-chart-3/10 flex items-center justify-center">
@@ -558,7 +558,7 @@ export default function ForecastPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-0 shadow-none">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-lg bg-chart-4/10 flex items-center justify-center">
@@ -577,7 +577,7 @@ export default function ForecastPage() {
 
         {/* Forecast Table */}
         {forecast && (
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-foreground">Daily Predictions</CardTitle>
             </CardHeader>
@@ -585,7 +585,7 @@ export default function ForecastPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border">
+                    <tr className="">
                       <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Date</th>
                       <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Predicted</th>
                       <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Lower Bound</th>
@@ -598,7 +598,7 @@ export default function ForecastPage() {
                       const prevPredicted = i > 0 ? forecast[i - 1].predicted : row.predicted
                       const trend = ((row.predicted - prevPredicted) / prevPredicted) * 100
                       return (
-                        <tr key={row.date} className="border-b border-border/50">
+                        <tr key={row.date} className="">
                           <td className="py-3 px-4 text-sm text-foreground">
                             {new Date(row.date).toLocaleDateString("en-US", {
                               weekday: "short",

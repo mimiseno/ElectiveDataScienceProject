@@ -120,7 +120,7 @@ export default function DashboardPage() {
       <div className="flex-1 p-6 space-y-6 overflow-auto">
         {/* Database Connection Warning */}
         {isMockData && (
-          <Card className="bg-warning/10 border-warning/20">
+          <Card className="bg-warning/10 border-0 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-warning" />
@@ -137,7 +137,7 @@ export default function DashboardPage() {
 
         {/* Error Display */}
         {error && (
-          <Card className="bg-destructive/10 border-destructive/20">
+          <Card className="bg-destructive/10 border-0 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-destructive" />
@@ -180,7 +180,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Users Per Month Chart */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground">Monthly Active Users</CardTitle>
           </CardHeader>
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                   })}
                 </div>
                 {/* Legend */}
-                <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-border">
+                <div className="flex items-center justify-center gap-4 mt-4 pt-4">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-chart-1 rounded" />
                     <span className="text-xs text-muted-foreground">Active Users</span>
@@ -261,7 +261,7 @@ export default function DashboardPage() {
         {/* Bottom Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* User Activity Summary */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-foreground">User Activity Summary</CardTitle>
             </CardHeader>
@@ -305,7 +305,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Recent System Activity */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-foreground">Recent System Activity</CardTitle>
             </CardHeader>
@@ -349,7 +349,7 @@ export default function DashboardPage() {
 
         {/* Admin Notice */}
         {isAdmin && (
-          <Card className="bg-primary/5 border-primary/20">
+          <Card className="bg-primary/5 border-0 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">

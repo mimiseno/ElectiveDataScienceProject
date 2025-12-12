@@ -164,7 +164,7 @@ export default function AdminPage() {
 
       <div className="flex-1 p-6 space-y-6 overflow-auto">
         {/* System Status */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -197,7 +197,7 @@ export default function AdminPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {systemMetrics.map((metric) => (
-                  <div key={metric.name} className="p-4 bg-muted/20 rounded-lg border border-border">
+                  <div key={metric.name} className="p-4 bg-muted/20 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-muted-foreground">{metric.name}</span>
                       {metric.status === "loading" ? (
@@ -223,7 +223,7 @@ export default function AdminPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* ML Models */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-foreground flex items-center gap-2">
                 <Database className="w-5 h-5 text-primary" />
@@ -240,7 +240,7 @@ export default function AdminPage() {
                 models.map((model) => (
                   <div
                     key={model.name}
-                    className="flex items-center justify-between p-4 bg-muted/20 rounded-lg border border-border"
+                    className="flex items-center justify-between p-4 bg-muted/20 rounded-lg"
                   >
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground">{model.name}</p>
@@ -266,7 +266,7 @@ export default function AdminPage() {
           </Card>
 
           {/* Quick Actions */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-foreground flex items-center gap-2">
                 <Settings className="w-5 h-5 text-primary" />
@@ -312,8 +312,8 @@ export default function AdminPage() {
           </Card>
         </div>
 
-        {/* System Settings */}
-        <Card className="bg-card border-border">
+        {/* System Information */}
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
               <Lock className="w-5 h-5 text-primary" />
@@ -323,19 +323,19 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-muted/20 rounded-lg border border-border">
+              <div className="p-4 bg-muted/20 rounded-lg">
                 <p className="text-sm text-muted-foreground">Flask API Endpoint</p>
                 <p className="text-foreground font-mono text-sm">http://localhost:5000</p>
               </div>
-              <div className="p-4 bg-muted/20 rounded-lg border border-border">
+              <div className="p-4 bg-muted/20 rounded-lg">
                 <p className="text-sm text-muted-foreground">Database Provider</p>
                 <p className="text-foreground font-mono text-sm">Supabase (PostgreSQL)</p>
               </div>
-              <div className="p-4 bg-muted/20 rounded-lg border border-border">
+              <div className="p-4 bg-muted/20 rounded-lg">
                 <p className="text-sm text-muted-foreground">ML Framework</p>
                 <p className="text-foreground font-mono text-sm">Prophet + XGBoost + K-Means</p>
               </div>
-              <div className="p-4 bg-muted/20 rounded-lg border border-border">
+              <div className="p-4 bg-muted/20 rounded-lg">
                 <p className="text-sm text-muted-foreground">Training Dataset</p>
                 <p className="text-foreground font-mono text-sm">Olist E-commerce (Brazil)</p>
               </div>
@@ -344,7 +344,7 @@ export default function AdminPage() {
         </Card>
 
         {/* API Configuration */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
               <Server className="w-5 h-5 text-primary" />
@@ -356,7 +356,7 @@ export default function AdminPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border">
+                  <tr className="">
                     <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Endpoint</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Method</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Rate Limit</th>
@@ -364,7 +364,7 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-border/50">
+                  <tr className="">
                     <td className="py-3 px-4 text-sm text-foreground font-mono">/predict/segment</td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">POST</td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">100/min</td>
@@ -372,7 +372,7 @@ export default function AdminPage() {
                       <span className="px-2 py-1 text-xs bg-success/20 text-success rounded-full">Active</span>
                     </td>
                   </tr>
-                  <tr className="border-b border-border/50">
+                  <tr className="">
                     <td className="py-3 px-4 text-sm text-foreground font-mono">/predict/forecast</td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">POST</td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">50/min</td>
@@ -380,7 +380,7 @@ export default function AdminPage() {
                       <span className="px-2 py-1 text-xs bg-success/20 text-success rounded-full">Active</span>
                     </td>
                   </tr>
-                  <tr className="border-b border-border/50">
+                  <tr className="">
                     <td className="py-3 px-4 text-sm text-foreground font-mono">/health</td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">GET</td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">Unlimited</td>
@@ -388,7 +388,7 @@ export default function AdminPage() {
                       <span className="px-2 py-1 text-xs bg-success/20 text-success rounded-full">Active</span>
                     </td>
                   </tr>
-                  <tr className="border-b border-border/50">
+                  <tr className="">
                     <td className="py-3 px-4 text-sm text-foreground font-mono">/models/info</td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">GET</td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">200/min</td>

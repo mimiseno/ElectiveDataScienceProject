@@ -21,7 +21,7 @@ export default function SettingsPage() {
 
       <div className="flex-1 p-6 space-y-6 overflow-auto">
         {/* Notifications */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
               <Bell className="w-5 h-5 text-primary" />
@@ -62,7 +62,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* Display Preferences */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
               <Moon className="w-5 h-5 text-primary" />
@@ -96,7 +96,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* Regional Settings */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
               <Globe className="w-5 h-5 text-primary" />
@@ -130,7 +130,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* Security */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
               <Lock className="w-5 h-5 text-primary" />

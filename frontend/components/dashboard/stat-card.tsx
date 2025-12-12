@@ -13,7 +13,7 @@ interface StatCardProps {
 
 export function StatCard({ title, value, change, trend, icon: Icon, iconColor = "text-primary" }: StatCardProps) {
   return (
-    <Card className="bg-card border-border">
+    <Card className="bg-card border-0 shadow-none">
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-2">

@@ -198,7 +198,7 @@ export default function SegmentsPage() {
       <div className="flex-1 p-6 space-y-6 overflow-auto">
         {/* Error Display */}
         {error && (
-          <Card className="bg-destructive/10 border-destructive/20">
+          <Card className="bg-destructive/10 border-0 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <AlertTriangle className="w-5 h-5 text-destructive" />
@@ -212,7 +212,7 @@ export default function SegmentsPage() {
         )}
 
         {uploadError && (
-          <Card className="bg-destructive/10 border-destructive/20">
+          <Card className="bg-destructive/10 border-0 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <AlertTriangle className="w-5 h-5 text-destructive" />
@@ -224,7 +224,7 @@ export default function SegmentsPage() {
             </CardContent>
           </Card>
         )}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
               <Upload className="w-5 h-5 text-primary" />
@@ -283,7 +283,7 @@ export default function SegmentsPage() {
 
         {datasetResults && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-0 shadow-none">
               <CardHeader>
                 <CardTitle className="text-foreground">Customer Segments Distribution</CardTitle>
                 <CardDescription className="text-muted-foreground">
@@ -347,7 +347,7 @@ export default function SegmentsPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-0 shadow-none">
               <CardHeader>
                 <CardTitle className="text-foreground">Segment Insights</CardTitle>
                 <CardDescription className="text-muted-foreground">
@@ -377,7 +377,7 @@ export default function SegmentsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Single Customer Analysis Input Form */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-foreground flex items-center gap-2">
                 <Target className="w-5 h-5 text-primary" />
@@ -485,7 +485,7 @@ export default function SegmentsPage() {
           </Card>
 
           {/* Single Customer Result */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-foreground">Prediction Result</CardTitle>
               <CardDescription className="text-muted-foreground">
@@ -542,7 +542,7 @@ export default function SegmentsPage() {
         </div>
 
         {/* Segment Overview */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-0 shadow-none">
           <CardHeader>
             <CardTitle className="text-foreground">All Customer Segments</CardTitle>
             <CardDescription className="text-muted-foreground">
