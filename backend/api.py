@@ -1,12 +1,10 @@
-"""
+""" 
 Flask API Backend for E-commerce Analytics Dashboard
 Serves pre-trained ML models for customer segmentation and sales forecasting
 
 Models:
 - K-Means: Customer segmentation based on RFM analysis
-- Prophet: Time-series sales forecasting
 - XGBoost: Feature-based sales prediction
-- Ensemble: Weighted combination of Prophet + XGBoost
 
 Team: Sereno, Page, Dulce, Laudato
 Teacher: Sir Charlston Sean Gono
@@ -29,7 +27,6 @@ required_packages = {
     'pandas': 'pandas',
     'numpy': 'numpy',
     'scipy': 'scipy',
-    'prophet': 'prophet',
     'sklearn': 'scikit-learn',
     'xgboost': 'xgboost'
 }
@@ -66,13 +63,11 @@ CORS(app)  # Enable CORS for frontend requests
 # Model paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KMEANS_MODEL_PATH = os.path.join(BASE_DIR, 'ai_models', 'kmeans_model_customer_categorization.joblib')
-PROPHET_MODEL_PATH = os.path.join(BASE_DIR, 'ai_models', 'prophet_model_sales_forecast.joblib')
 XGBOOST_MODEL_PATH = os.path.join(BASE_DIR, 'ai_models', 'xgboost_model_sales_forecast.joblib')
 RFM_SCALER_PATH = os.path.join(BASE_DIR, 'ai_models', 'rfm_scaler.joblib')
 
 # Load models at startup
 kmeans_model = None
-prophet_model = None
 xgboost_model = None
 rfm_scaler = None
 
@@ -81,12 +76,6 @@ try:
     print(f"✅ K-Means model loaded: {KMEANS_MODEL_PATH}")
 except Exception as e:
     print(f"❌ Error loading K-Means model: {e}")
-
-try:
-    prophet_model = joblib.load(PROPHET_MODEL_PATH)
-    print(f"✅ Prophet model loaded: {PROPHET_MODEL_PATH}")
-except Exception as e:
-    print(f"❌ Error loading Prophet model: {e}")
 
 try:
     xgboost_model = joblib.load(XGBOOST_MODEL_PATH)
@@ -177,7 +166,6 @@ def health_check():
         'status': 'healthy',
         'models_loaded': {
             'kmeans': kmeans_model is not None,
-            'prophet': prophet_model is not None,
             'xgboost': xgboost_model is not None,
             'rfm_scaler': rfm_scaler is not None
         },
@@ -315,17 +303,15 @@ def predict_customer_segment():
 @app.route('/predict/forecast', methods=['POST'])
 def predict_sales_forecast():
     """
-    Generate sales forecast using Prophet, XGBoost, and Ensemble models
+    Generate sales forecast using XGBoost model
     
     Expected JSON payload:
     {
         "start_date": "YYYY-MM-DD" (optional, defaults to tomorrow),
-        "periods": int (number of days to forecast, default 7),
-        "model": "prophet" | "xgboost" | "ensemble" (optional, default "ensemble")
+        "periods": int (number of days to forecast, default 7)
     }
     
-    XGBoost requires historical data context. For simplicity, we use Prophet for
-    pure time-series forecasting and provide model confidence based on uncertainty intervals.
+    XGBoost uses feature engineering with lag and rolling statistics for predictions.
     """
     try:
         data = request.get_json() or {}
@@ -333,16 +319,14 @@ def predict_sales_forecast():
         # Get parameters with defaults
         start_date = data.get('start_date', None)
         periods = int(data.get('periods', 7))
-        model_choice = data.get('model', 'prophet').lower()
         
         # Validate periods
         if periods < 1 or periods > 365:
             return jsonify({'error': 'Periods must be between 1 and 365'}), 400
         
-        # Validate model choice
-        valid_models = ['prophet', 'xgboost', 'ensemble']
-        if model_choice not in valid_models:
-            return jsonify({'error': f'Model must be one of: {valid_models}'}), 400
+        # Check if XGBoost model is loaded
+        if xgboost_model is None:
+            return jsonify({'error': 'XGBoost model not loaded'}), 500
         
         # Create future dataframe
         if start_date:
@@ -357,108 +341,43 @@ def predict_sales_forecast():
         future_dates = pd.date_range(start=start_date, periods=periods, freq='D')
         
         forecast_list = []
-        prophet_predictions = None
-        xgb_predictions = None
-        
-        # Prophet predictions (always available if model loaded)
-        # Note: Prophet was trained on 2016-2018 Olist data, so we forecast relative to that period
-        # and map results back to requested dates
-        if prophet_model is not None and model_choice in ['prophet', 'ensemble']:
-            # Use dates relative to training data end (Jul 2018) for prediction
-            # This ensures Prophet uses its learned seasonal patterns correctly
-            training_end = pd.to_datetime('2018-07-30')  # Last date in Olist training data
-            prophet_future_dates = pd.date_range(start=training_end + timedelta(days=1), periods=periods, freq='D')
-            future_df = pd.DataFrame({'ds': prophet_future_dates})
-            prophet_forecast = prophet_model.predict(future_df)
-            
-            # Map back to requested dates and clip negative values
-            prophet_predictions = pd.DataFrame({
-                'ds': future_dates,  # Use requested dates for display
-                'yhat': prophet_forecast['yhat'].clip(lower=0).values,  # No negative sales
-                'yhat_lower': prophet_forecast['yhat_lower'].clip(lower=0).values,
-                'yhat_upper': prophet_forecast['yhat_upper'].clip(lower=0).values
-            })
         
         # XGBoost predictions (requires feature engineering)
-        if xgboost_model is not None and model_choice in ['xgboost', 'ensemble']:
-            # Create features for XGBoost
-            xgb_features = pd.DataFrame({'Date': future_dates})
-            xgb_features['DayOfWeek'] = xgb_features['Date'].dt.dayofweek
-            xgb_features['Month'] = xgb_features['Date'].dt.month
-            xgb_features['DayOfMonth'] = xgb_features['Date'].dt.day
-            xgb_features['WeekOfYear'] = xgb_features['Date'].dt.isocalendar().week.astype(int)
-            
-            # For lag and rolling features, we need to use reasonable defaults
-            # since we don't have historical data in this API call
-            # Using average values as placeholders (Olist dataset averages)
-            avg_daily_sales = 50000  # Reasonable average from Olist training data (R$)
-            
-            for lag in [1, 7, 14, 28]:
-                xgb_features[f'Lag_{lag}'] = avg_daily_sales
-            
-            for window in [7, 14, 30]:
-                xgb_features[f'Rolling_Mean_{window}'] = avg_daily_sales
-                xgb_features[f'Rolling_Std_{window}'] = avg_daily_sales * 0.3  # ~30% std
-            
-            # Get feature columns (exclude Date)
-            feature_cols = [c for c in xgb_features.columns if c != 'Date']
-            X_future = xgb_features[feature_cols]
-            
-            # Make predictions and clip negative values
-            xgb_pred = xgboost_model.predict(X_future)
-            xgb_pred = np.clip(xgb_pred, 0, None)  # No negative sales
-            
-            xgb_predictions = pd.DataFrame({
-                'ds': future_dates,
-                'yhat': xgb_pred,
-                # XGBoost doesn't have native uncertainty, estimate as ±15%
-                'yhat_lower': xgb_pred * 0.85,
-                'yhat_upper': xgb_pred * 1.15
-            })
+        # Create features for XGBoost
+        xgb_features = pd.DataFrame({'Date': future_dates})
+        xgb_features['DayOfWeek'] = xgb_features['Date'].dt.dayofweek
+        xgb_features['Month'] = xgb_features['Date'].dt.month
+        xgb_features['DayOfMonth'] = xgb_features['Date'].dt.day
+        xgb_features['WeekOfYear'] = xgb_features['Date'].dt.isocalendar().week.astype(int)
         
-        # Prepare forecast based on model choice
-        if model_choice == 'prophet':
-            if prophet_predictions is None:
-                return jsonify({'error': 'Prophet model not loaded'}), 500
-            forecast_df = prophet_predictions
-            model_used = 'Prophet'
-            
-        elif model_choice == 'xgboost':
-            if xgb_predictions is None:
-                return jsonify({'error': 'XGBoost model not loaded'}), 500
-            forecast_df = xgb_predictions
-            model_used = 'XGBoost'
-            
-        else:  # ensemble
-            if prophet_predictions is None and xgb_predictions is None:
-                return jsonify({'error': 'No forecasting models available'}), 500
-            elif prophet_predictions is None:
-                forecast_df = xgb_predictions
-                model_used = 'XGBoost (Prophet unavailable)'
-            elif xgb_predictions is None:
-                forecast_df = prophet_predictions
-                model_used = 'Prophet (XGBoost unavailable)'
-            else:
-                # Weighted ensemble (Prophet 60%, XGBoost 40% based on typical MAPE performance)
-                w_prophet = 0.6
-                w_xgb = 0.4
-                
-                ensemble_yhat = w_prophet * prophet_predictions['yhat'].values + w_xgb * xgb_predictions['yhat'].values
-                ensemble_lower = w_prophet * prophet_predictions['yhat_lower'].values + w_xgb * xgb_predictions['yhat_lower'].values
-                ensemble_upper = w_prophet * prophet_predictions['yhat_upper'].values + w_xgb * xgb_predictions['yhat_upper'].values
-                
-                # Clip negative values
-                ensemble_yhat = np.clip(ensemble_yhat, 0, None)
-                ensemble_lower = np.clip(ensemble_lower, 0, None)
-                ensemble_upper = np.clip(ensemble_upper, 0, None)
-                
-                forecast_df = pd.DataFrame({
-                    'ds': future_dates,
-                    'yhat': ensemble_yhat,
-                    'yhat_lower': ensemble_lower,
-                    'yhat_upper': ensemble_upper
-                })
-                model_used = f'Ensemble (Prophet {w_prophet:.0%} + XGBoost {w_xgb:.0%})'
+        # For lag and rolling features, we need to use reasonable defaults
+        # since we don't have historical data in this API call
+        # Using average values as placeholders (Olist dataset averages)
+        avg_daily_sales = 50000  # Reasonable average from Olist training data (R$)
+        
+        for lag in [1, 7, 14, 28]:
+            xgb_features[f'Lag_{lag}'] = avg_daily_sales
+        
+        for window in [7, 14, 30]:
+            xgb_features[f'Rolling_Mean_{window}'] = avg_daily_sales
+            xgb_features[f'Rolling_Std_{window}'] = avg_daily_sales * 0.3  # ~30% std
+        
+        # Get feature columns (exclude Date)
+        feature_cols = [c for c in xgb_features.columns if c != 'Date']
+        X_future = xgb_features[feature_cols]
+        
+        # Make predictions and clip negative values
+        xgb_pred = xgboost_model.predict(X_future)
+        xgb_pred = np.clip(xgb_pred, 0, None)  # No negative sales
+        
+        forecast_df = pd.DataFrame({
+            'ds': future_dates,
+            'yhat': xgb_pred,
+            # XGBoost doesn't have native uncertainty, estimate as ±15%
+            'yhat_lower': xgb_pred * 0.85,
+            'yhat_upper': xgb_pred * 1.15
+        })
+        model_used = 'XGBoost'
         
         # Convert to list of dicts with confidence metrics
         for idx, row in forecast_df.iterrows():
@@ -518,7 +437,6 @@ def predict_sales_forecast():
                 'start_date': start_date.strftime('%Y-%m-%d')
             },
             'models_available': {
-                'prophet': prophet_model is not None,
                 'xgboost': xgboost_model is not None
             },
             'timestamp': datetime.now().isoformat()
@@ -547,14 +465,6 @@ def get_models_info():
                 'cluster_names': CLUSTER_NAMES,
                 'description': 'Customer segmentation using RFM analysis'
             },
-            'prophet_model': {
-                'loaded': prophet_model is not None,
-                'path': PROPHET_MODEL_PATH,
-                'max_forecast_days': 365,
-                'features': ['date'],
-                'output': ['yhat', 'yhat_lower', 'yhat_upper'],
-                'description': 'Time-series forecasting with seasonality'
-            },
             'xgboost_model': {
                 'loaded': xgboost_model is not None,
                 'path': XGBOOST_MODEL_PATH,
@@ -564,17 +474,12 @@ def get_models_info():
                             'Rolling_Mean_7', 'Rolling_Mean_14', 'Rolling_Mean_30',
                             'Rolling_Std_7', 'Rolling_Std_14', 'Rolling_Std_30'],
                 'output': ['yhat'],
-                'description': 'Gradient boosting with feature engineering'
+                'description': 'Gradient boosting with feature engineering for sales forecasting'
             },
             'rfm_scaler': {
                 'loaded': rfm_scaler is not None,
                 'path': RFM_SCALER_PATH,
                 'description': 'StandardScaler for RFM normalization'
-            },
-            'ensemble': {
-                'available': prophet_model is not None and xgboost_model is not None,
-                'weights': {'prophet': 0.6, 'xgboost': 0.4},
-                'description': 'Weighted average of Prophet and XGBoost predictions'
             }
         }
         
@@ -734,10 +639,9 @@ if __name__ == '__main__':
     print(f"   GET  /models/info             - Model information")
     print(f"   POST /predict/segment         - Customer segmentation (single)")
     print(f"   POST /predict/segment/bulk    - Customer segmentation (batch)")
-    print(f"   POST /predict/forecast        - Sales forecast (Prophet/XGBoost/Ensemble)")
+    print(f"   POST /predict/forecast        - Sales forecast (XGBoost)")
     print(f"\n🤖 Models Loaded:")
     print(f"   ✅ K-Means:  {kmeans_model is not None}")
-    print(f"   ✅ Prophet:  {prophet_model is not None}")
     print(f"   ✅ XGBoost:  {xgboost_model is not None}")
     print(f"   ✅ Scaler:   {rfm_scaler is not None}")
     print("="*70 + "\n")

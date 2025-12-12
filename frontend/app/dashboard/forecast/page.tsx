@@ -97,7 +97,7 @@ export default function ForecastPage() {
         body: JSON.stringify({
           start_date: startDate,
           periods: Number(periods),
-          model: 'ensemble'
+          model: 'xgboost'
         })
       })
       
@@ -187,7 +187,7 @@ export default function ForecastPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Sales Forecasting" description="Prophet + XGBoost ensemble model predictions" />
+      <Header title="Sales Forecasting" description="XGBoost ML-powered sales predictions" />
 
       <div className="flex-1 p-6 space-y-6 overflow-auto">
         <Card className="bg-card border-0 shadow-none">
@@ -416,11 +416,11 @@ export default function ForecastPage() {
               <div className="p-4 bg-muted/30 rounded-lg">
                 <h4 className="text-sm font-medium text-foreground mb-2">Model Info</h4>
                 <div className="space-y-1 text-xs text-muted-foreground">
-                  <p>Prophet: 60% weight (seasonality)</p>
-                  <p>XGBoost: 40% weight (patterns)</p>
+                  <p>XGBoost: Gradient Boosting</p>
+                  <p>Features: Lag, Rolling Stats, Seasonality</p>
                   <p>Training data: Olist 2016-2018</p>
                   {forecastSummary && (
-                    <p className="text-chart-1 mt-2">Model: {forecastSummary.model_used || 'Ensemble'}</p>
+                    <p className="text-chart-1 mt-2">Model: {forecastSummary.model_used || 'XGBoost'}</p>
                   )}
                 </div>
               </div>

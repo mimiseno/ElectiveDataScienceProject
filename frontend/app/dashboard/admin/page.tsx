@@ -15,7 +15,6 @@ interface SystemStatus {
   modelServer: { value: string; status: "healthy" | "error" | "loading" };
   modelsLoaded: {
     kmeans: boolean;
-    prophet: boolean;
     xgboost: boolean;
     rfm_scaler: boolean;
   };
@@ -36,7 +35,7 @@ export default function AdminPage() {
     apiHealth: { value: "Checking...", status: "loading" },
     databaseStatus: { value: "Checking...", status: "loading" },
     modelServer: { value: "Checking...", status: "loading" },
-    modelsLoaded: { kmeans: false, prophet: false, xgboost: false, rfm_scaler: false }
+    modelsLoaded: { kmeans: false, xgboost: false, rfm_scaler: false }
   })
   const [models, setModels] = useState<ModelInfo[]>([])
   const [lastChecked, setLastChecked] = useState<string>("")
@@ -47,7 +46,7 @@ export default function AdminPage() {
     // Check Flask API health
     let apiStatus: SystemStatus["apiHealth"] = { value: "Offline", status: "error" }
     let modelStatus: SystemStatus["modelServer"] = { value: "Offline", status: "error" }
-    let modelsLoaded = { kmeans: false, prophet: false, xgboost: false, rfm_scaler: false }
+    let modelsLoaded = { kmeans: false, xgboost: false, rfm_scaler: false }
     let modelsList: ModelInfo[] = []
     
     try {
@@ -62,7 +61,7 @@ export default function AdminPage() {
         modelsLoaded = healthData.models_loaded || modelsLoaded
         
         // Check if all models are loaded
-        const allLoaded = modelsLoaded.kmeans && modelsLoaded.prophet && modelsLoaded.xgboost
+        const allLoaded = modelsLoaded.kmeans && modelsLoaded.xgboost
         modelStatus = allLoaded 
           ? { value: "All Models Loaded", status: "healthy" }
           : { value: "Some Models Missing", status: "error" }
@@ -89,14 +88,9 @@ export default function AdminPage() {
             description: modelsData.kmeans_model?.description || "Customer segmentation"
           },
           { 
-            name: "Prophet Forecasting", 
-            loaded: modelsData.prophet_model?.loaded || false,
-            description: modelsData.prophet_model?.description || "Time-series forecasting"
-          },
-          { 
-            name: "XGBoost Ensemble", 
+            name: "XGBoost Forecasting", 
             loaded: modelsData.xgboost_model?.loaded || false,
-            description: modelsData.xgboost_model?.description || "Gradient boosting predictions"
+            description: modelsData.xgboost_model?.description || "Sales forecasting with gradient boosting"
           },
           { 
             name: "RFM Scaler", 
@@ -333,7 +327,7 @@ export default function AdminPage() {
               </div>
               <div className="p-4 bg-muted/20 rounded-lg">
                 <p className="text-sm text-muted-foreground">ML Framework</p>
-                <p className="text-foreground font-mono text-sm">Prophet + XGBoost + K-Means</p>
+                <p className="text-foreground font-mono text-sm">XGBoost + K-Means</p>
               </div>
               <div className="p-4 bg-muted/20 rounded-lg">
                 <p className="text-sm text-muted-foreground">Training Dataset</p>

@@ -2,12 +2,12 @@
  * Sales Forecast Generation API Route
  * 
  * POST /api/forecast/generate
- * Generates sales forecasts using Flask Prophet+XGBoost ensemble model
+ * Generates sales forecasts using Flask XGBoost model
  * 
  * Workflow:
- * 1. Receives forecast parameters (start_date, periods, model choice)
+ * 1. Receives forecast parameters (start_date, periods)
  * 2. Validates input parameters
- * 3. Calls Flask API for prediction
+ * 3. Calls Flask API for XGBoost prediction
  * 4. Saves forecast results to Supabase
  * 5. Logs activity
  * 6. Returns forecast data with confidence intervals
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const data = await request.json()
     
     // Extract and validate parameters
-    const { start_date, periods = 7, model = 'ensemble' } = data
+    const { start_date, periods = 7, model = 'xgboost' } = data
     
     if (!start_date) {
       return NextResponse.json(
@@ -52,11 +52,10 @@ export async function POST(request: Request) {
       )
     }
     
-    // Validate model choice
-    const validModels = ['prophet', 'xgboost', 'ensemble']
-    if (!validModels.includes(model)) {
+    // Validate model choice (XGBoost only)
+    if (model !== 'xgboost') {
       return NextResponse.json(
-        { error: `Model must be one of: ${validModels.join(', ')}` },
+        { error: 'Only XGBoost model is supported for forecasting' },
         { status: 400 }
       )
     }
