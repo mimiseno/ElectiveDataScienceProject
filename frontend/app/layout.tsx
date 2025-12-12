@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Analytix - E-commerce Analytics Dashboard",
+  title: "Praedion - E-commerce Analytics Dashboard",
   description: "ML-powered customer segmentation and sales forecasting",
     generator: 'v0.app'
 }

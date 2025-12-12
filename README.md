@@ -1,4 +1,4 @@
-# 🎯 Analytix - E-commerce Analytics Dashboard
+# 🎯 Praedion - E-commerce Analytics Dashboard
 
 > **AI-Powered Customer Segmentation & Sales Forecasting Platform**
 
@@ -22,7 +22,7 @@
 
 ## 📋 Project Overview
 
-Analytix is a production-ready analytics platform that leverages machine learning to provide actionable insights for e-commerce businesses. Built with modern web technologies and trained on the Brazilian E-commerce dataset (Olist).
+Praedion is a production-ready analytics platform that leverages machine learning to provide actionable insights for e-commerce businesses. Built with modern web technologies and trained on the Brazilian E-commerce dataset (Olist).
 
 ### Key Features
 

@@ -1,7 +1,7 @@
 -- ================================================================
 -- SUPABASE SQL SCHEMA FOR E-COMMERCE ANALYTICS DASHBOARD
 -- ================================================================
--- Project: Analytix - ML-powered E-commerce Analytics
+-- Project: Praedion - ML-powered E-commerce Analytics
 -- Team: Sereno, Page, Dulce, Laudato
 -- Teacher: Sir Charlston Sean Gono
 -- 
@@ -419,8 +419,8 @@ $$ LANGUAGE plpgsql;
 -- Insert default admin user (password should be hashed in real implementation)
 INSERT INTO public.users (email, name, role, status)
 VALUES 
-    ('admin@analytix.com', 'Admin User', 'admin', 'active'),
-    ('user@analytix.com', 'Regular User', 'user', 'active')
+    ('admin@praedion.com', 'Admin User', 'admin', 'active'),
+    ('user@praedion.com', 'Regular User', 'user', 'active')
 ON CONFLICT (email) DO NOTHING;
 
 -- Insert initial dashboard stats

@@ -1,5 +1,5 @@
 # ================================================================
-# QUICK START GUIDE - ANALYTIX E-COMMERCE DASHBOARD
+# QUICK START GUIDE - PRAEDION E-COMMERCE DASHBOARD
 # ================================================================
 # Follow these steps to get the project running on your machine
 # ================================================================
@@ -87,8 +87,8 @@ npm run dev
 ## Default Login Credentials
 
 After running the SQL schema, use these test accounts:
-- **Admin**: admin@analytix.com (set password after registration)
-- **User**: user@analytix.com (set password after registration)
+- **Admin**: admin@praedion.com (set password after registration)
+- **User**: user@praedion.com (set password after registration)
 
 ## Troubleshooting
 

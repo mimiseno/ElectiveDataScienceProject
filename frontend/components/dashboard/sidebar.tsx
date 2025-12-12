@@ -54,7 +54,7 @@ export function Sidebar() {
             <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
               <BarChart3 className="w-4 h-4 text-primary" />
             </div>
-            <span className="font-semibold text-sidebar-foreground">Analytix</span>
+            <span className="font-semibold text-sidebar-foreground">Praedion</span>
           </div>
         )}
         <Button

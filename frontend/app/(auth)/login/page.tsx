@@ -51,7 +51,7 @@ export default function LoginPage() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold text-foreground">Welcome back</CardTitle>
-            <CardDescription className="text-muted-foreground">Sign in to your Analytix account</CardDescription>
+            <CardDescription className="text-muted-foreground">Sign in to your Praedion account</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -70,7 +70,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@analytix.com"
+                placeholder="admin@praedion.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-input border-border text-foreground placeholder:text-muted-foreground"

@@ -1,13 +1,13 @@
 @echo off
 REM ================================================================
-REM SETUP SCRIPT - ANALYTIX E-COMMERCE DASHBOARD
+REM SETUP SCRIPT - PRAEDION E-COMMERCE DASHBOARD
 REM ================================================================
 REM Automated setup for team members cloning the repository
 REM ================================================================
 
 echo.
 echo ================================================================
-echo ANALYTIX - SETUP WIZARD
+echo PRAEDION - SETUP WIZARD
 echo ================================================================
 echo.
 

@@ -87,7 +87,7 @@ export default function RegisterPage() {
           <div>
             <CardTitle className="text-2xl font-bold text-foreground">Create an account</CardTitle>
             <CardDescription className="text-muted-foreground">
-              Start your analytics journey with Analytix
+              Start your analytics journey with Praedion
             </CardDescription>
           </div>
         </CardHeader>
