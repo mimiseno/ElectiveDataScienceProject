@@ -1,55 +1,117 @@
-# Advanced Data Mining for Customer Segmentation and Sales Forecasting
+# 🎯 Analytix - E-commerce Analytics Dashboard
 
-**An Analytics Framework for E-commerce Optimization**
+> **AI-Powered Customer Segmentation & Sales Forecasting Platform**
+
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+---
 
 ## 👥 Team Members
-- Sereno, Micah T.
-- Page, King Edward T.
-- Dulce, Mielle Angelie, B.
-- Laudato, Sir Lawrence C.
+- **Sereno, Micah T.**
+- **Page, King Edward T.**
+- **Dulce, Mielle Angelie B.**
+- **Laudato, Sir Lawrence C.**
 
-**Teacher:** Sir Charlston Sean Gono
+**Instructor:** Sir Charlston Sean Gono  
+**Institution:** [Your Institution Name]  
+**Course:** Data Science Elective Project
 
 ---
 
 ## 📋 Project Overview
 
-This project implements advanced data mining techniques to solve critical e-commerce business challenges:
+Analytix is a production-ready analytics platform that leverages machine learning to provide actionable insights for e-commerce businesses. Built with modern web technologies and trained on the Brazilian E-commerce dataset (Olist).
 
-1. **Customer Segmentation** using K-Means clustering with RFM (Recency, Frequency, Monetary) analysis
-2. **Sales Forecasting** using Facebook Prophet algorithm
-3. **Business Intelligence Dashboard** for actionable insights
+### Key Features
+
+✅ **Customer Segmentation** - K-Means clustering with RFM analysis (4 segments)  
+✅ **Sales Forecasting** - Prophet + XGBoost ensemble (7-365 days ahead)  
+✅ **User Authentication** - Supabase-powered secure auth with RLS  
+✅ **Real-time Analytics** - Live dashboard with ML predictions  
+✅ **RESTful API** - Flask backend serving pre-trained models  
+✅ **Modern UI** - Next.js 14 + Tailwind CSS + Shadcn UI
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Quick Start for Team Members
 
-### Option 1: Run with npm (Recommended)
+### Prerequisites
 
-#### Step 1: Install Dependencies
+- **Node.js** 18+ and npm
+- **Python** 3.8+
+- **Git**
+- **Supabase Account** (free tier works)
+
+### Setup Steps
+
+#### 1️⃣ Clone Repository
 ```bash
-# Install Python dependencies
-cd backend
-pip install -r requirements.txt
-cd ..
-
-# Install Node dependencies
-npm install
+git clone <repository-url>
+cd ElectiveDataScienceProject
 ```
 
-#### Step 2: Run Both Frontend & Backend
+#### 2️⃣ Run Automated Setup (Windows)
 ```bash
-# Option A: Run both simultaneously
-npm run both
-
-# Option B: Run separately in 2 terminals
-# Terminal 1 - Backend:
-npm run backend
-# Or: python backend/api.py
-
-# Terminal 2 - Frontend:
-npm run dev
+setup.bat
 ```
+
+Or manually:
+
+#### 3️⃣ Install All Dependencies
+```bash
+npm run setup
+```
+
+This installs:
+- Root dependencies (concurrently)
+- Frontend dependencies (Next.js, React, etc.)
+- Backend dependencies (Flask, Prophet, XGBoost, etc.)
+
+#### 4️⃣ Configure Environment Variables
+
+**Frontend:**
+```bash
+cd frontend
+copy .env.local.example .env.local
+```
+
+Edit `frontend/.env.local`:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+NEXT_PUBLIC_FLASK_API_URL=http://localhost:5000
+```
+
+Get Supabase credentials from: **Dashboard → Project Settings → API**
+
+#### 5️⃣ Setup Database
+
+1. Go to **Supabase SQL Editor**
+2. Run `supabase_schema.sql` (in root directory)
+3. Verify 9 tables created
+
+#### 6️⃣ Start Development Servers
+
+```bash
+# Start both frontend + backend
+npm start
+
+# Or separately:
+npm run backend  # Flask API on :5000
+npm run dev      # Next.js on :3000
+```
+
+#### 7️⃣ Access Application
+
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:5000
+- **Health Check:** http://localhost:5000/health
+
+---
+
+## 📦 Project Structure
 
 The dashboard will automatically open at **http://localhost:3000**  
 The API runs at **http://localhost:5000**
@@ -295,22 +357,113 @@ The analysis provides:
 
 ---
 
+## �‍💻 Team Collaboration Workflow
+
+### For Team Members Cloning This Repo
+
+#### First Time Setup
+```bash
+# 1. Clone the repository
+git clone <repo-url>
+cd ElectiveDataScienceProject
+
+# 2. Run setup script (Windows)
+setup.bat
+
+# Or manually:
+npm run setup
+
+# 3. Configure environment
+cd frontend
+copy .env.local.example .env.local
+# Edit .env.local with your Supabase credentials
+
+# 4. Setup database
+# Run supabase_schema.sql in Supabase SQL Editor
+```
+
+#### Daily Development
+```bash
+# 1. Pull latest changes
+git pull origin main
+
+# 2. Install any new dependencies (if needed)
+npm install
+cd frontend && npm install && cd ..
+cd backend && pip install -r requirements.txt && cd ..
+
+# 3. Start development
+npm start
+
+# 4. Make your changes...
+
+# 5. Commit and push
+git add .
+git commit -m "Your descriptive message"
+git push origin main
+```
+
+#### Common Commands
+```bash
+npm start              # Start both frontend + backend
+npm run dev            # Start frontend only
+npm run backend        # Start backend only
+npm run check:env      # Verify environment configuration
+npm run build          # Build production version
+```
+
+#### Branch Strategy (Optional)
+```bash
+# Create feature branch
+git checkout -b feature/your-feature-name
+
+# Work on your feature...
+
+# Push feature branch
+git push origin feature/your-feature-name
+
+# Create pull request on GitHub
+```
+
+### Important Notes for Team
+
+⚠️ **Never commit these files:**
+- `.env.local` (contains secrets)
+- `node_modules/` (too large)
+- `__pycache__/` (Python cache)
+- `.next/` (build output)
+
+✅ **Always commit:**
+- Source code changes
+- Documentation updates
+- New dependencies (update package.json or requirements.txt)
+
+📝 **Use descriptive commit messages:**
+- ✅ `"Add user authentication to dashboard"`
+- ✅ `"Fix forecast chart rendering bug"`
+- ✅ `"Update RFM validation ranges"`
+- ❌ `"fix bug"`
+- ❌ `"update"`
+
+---
+
 ## 📝 Usage Tips
 
 1. **First Time Running:**
-   - Start with Step 1 (Install libraries)
-   - Run cells one by one to see outputs
-   - Wait for Prophet training (may take 2-3 minutes)
+   - Follow QUICKSTART.md for detailed instructions
+   - Ensure Supabase credentials are configured
+   - Run database schema before starting app
 
 2. **Troubleshooting:**
-   - If imports fail, restart runtime and reinstall packages
-   - Ensure dataset path is correct
-   - Check that all cells run in order
+   - Check `npm run check:env` for environment issues
+   - Verify Python/Node versions meet requirements
+   - See AUTH_SETUP.md for authentication problems
+   - Restart servers after changing .env files
 
-3. **Customization:**
-   - Adjust `optimal_k` in Step 5 based on elbow chart
-   - Modify forecast period in Step 6 (change `periods=30`)
-   - Add custom cluster labels based on your business
+3. **Development:**
+   - Frontend changes auto-reload (Next.js hot reload)
+   - Backend requires restart after code changes
+   - Use `/health` endpoint to verify API is running
 
 ---
 

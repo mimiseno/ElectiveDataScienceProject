@@ -1,23 +1,44 @@
 {
   "name": "ecommerce-analytics-dashboard",
   "version": "1.0.0",
-  "description": "AI-Powered E-commerce Analytics Dashboard",
+  "description": "AI-Powered E-commerce Analytics Dashboard with ML-based Customer Segmentation and Sales Forecasting",
   "scripts": {
-    "dev": "npx live-server frontend --port=3000 --open=/dashboard.html",
-    "start": "npm run dev",
+    "setup": "npm install && cd frontend && npm install && cd ../backend && pip install -r requirements.txt && cd ..",
+    "dev": "cd frontend && npm run dev",
+    "start": "npm run both",
     "backend": "cd backend && python api.py",
-    "both": "concurrently \"npm run backend\" \"npm run dev\""
+    "both": "concurrently \"npm run backend\" \"cd frontend && npm run dev\"",
+    "build": "cd frontend && npm run build",
+    "frontend:install": "cd frontend && npm install",
+    "backend:install": "cd backend && pip install -r requirements.txt",
+    "check:env": "node -e \"const fs = require('fs'); if (!fs.existsSync('./frontend/.env.local')) { console.error('\\x1b[31m[ERROR]\\x1b[0m frontend/.env.local not found! Copy .env.local.example and configure Supabase credentials.'); process.exit(1); } console.log('\\x1b[32m[OK]\\x1b[0m Environment configured');\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ElectiveDataScienceProject.git"
   },
   "keywords": [
     "ecommerce",
     "analytics",
     "machine-learning",
-    "dashboard"
+    "dashboard",
+    "customer-segmentation",
+    "sales-forecasting",
+    "rfm-analysis",
+    "prophet",
+    "xgboost",
+    "nextjs"
   ],
   "author": "Sereno, Page, Dulce, Laudato",
+  "teacher": "Sir Charlston Sean Gono",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2",
     "live-server": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0",
+    "python": ">=3.8.0"
   }
 }

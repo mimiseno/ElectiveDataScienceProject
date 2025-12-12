@@ -12,6 +12,46 @@ Team: Sereno, Page, Dulce, Laudato
 Teacher: Sir Charlston Sean Gono
 """
 
+import sys
+import os
+
+# Check Python version
+if sys.version_info < (3, 8):
+    print("ERROR: Python 3.8 or higher is required")
+    print(f"Current version: {sys.version}")
+    sys.exit(1)
+
+# Check required packages
+required_packages = {
+    'flask': 'Flask',
+    'flask_cors': 'Flask-CORS',
+    'joblib': 'joblib',
+    'pandas': 'pandas',
+    'numpy': 'numpy',
+    'scipy': 'scipy',
+    'prophet': 'prophet',
+    'sklearn': 'scikit-learn',
+    'xgboost': 'xgboost'
+}
+
+missing_packages = []
+for package, install_name in required_packages.items():
+    try:
+        __import__(package)
+    except ImportError:
+        missing_packages.append(install_name)
+
+if missing_packages:
+    print("=" * 70)
+    print("ERROR: Missing required Python packages!")
+    print("=" * 70)
+    print("\nPlease install the following packages:\n")
+    print(f"  pip install {' '.join(missing_packages)}")
+    print("\nOr install all requirements:")
+    print("  pip install -r requirements.txt")
+    print("=" * 70)
+    sys.exit(1)
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
@@ -19,7 +59,6 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from scipy.spatial.distance import cdist
-import os
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend requests
