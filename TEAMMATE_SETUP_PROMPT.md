@@ -175,9 +175,10 @@ After setup, you can:
 1. Navigate to `http://localhost:3000/register`
 2. Create a test user account
 3. Login and access dashboard
-4. Try customer segmentation with sample data:
+4. Try customer segmentation with sample data (3 clusters):
    - Recency: 60, Frequency: 2, Monetary: 30000 (Loyal Customer)
-   - Recency: 10, Frequency: 8, Monetary: 35000 (Champion)
+   - Recency: 120, Frequency: 1, Monetary: 1200 (At Risk)
+   - Recency: 350, Frequency: 1, Monetary: 1500 (Lost Customer)
 5. Try sales forecast: generate 7-day prediction
 
 ---

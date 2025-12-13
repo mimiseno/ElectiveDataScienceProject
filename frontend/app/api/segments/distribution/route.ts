@@ -42,12 +42,11 @@ export async function GET() {
       console.error('Error counting customers:', countError)
     }
 
-    // Transform data for frontend
+    // Transform data for frontend (3 clusters: Lost, At Risk, Loyal)
     const segmentColors: Record<number, string> = {
-      0: 'var(--chart-2)', // Loyal Customers
-      1: 'var(--chart-5)', // Lost Customers
-      2: 'var(--chart-1)', // Champions
-      3: 'var(--chart-3)', // At Risk
+      0: 'var(--chart-5)', // Lost Customers
+      1: 'var(--chart-3)', // At Risk
+      2: 'var(--chart-2)', // Loyal Customers
     }
 
     const distribution = segments
@@ -100,36 +99,29 @@ export async function GET() {
   }
 }
 
-// Mock data fallback
+// Mock data fallback (3 clusters: Lost, At Risk, Loyal)
 function getMockDistribution() {
   return [
     {
       cluster: 0,
-      name: 'Loyal Customers',
-      count: 0,
-      percentage: 0,
-      color: 'var(--chart-2)',
-    },
-    {
-      cluster: 1,
       name: 'Lost Customers',
       count: 0,
       percentage: 0,
       color: 'var(--chart-5)',
     },
     {
-      cluster: 2,
-      name: 'Champions',
-      count: 0,
-      percentage: 0,
-      color: 'var(--chart-1)',
-    },
-    {
-      cluster: 3,
+      cluster: 1,
       name: 'At Risk',
       count: 0,
       percentage: 0,
       color: 'var(--chart-3)',
+    },
+    {
+      cluster: 2,
+      name: 'Loyal Customers',
+      count: 0,
+      percentage: 0,
+      color: 'var(--chart-2)',
     },
   ]
 }

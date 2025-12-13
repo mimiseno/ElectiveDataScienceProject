@@ -21,12 +21,11 @@ print("\nCluster Centers (Scaled):")
 print(cluster_centers_scaled)
 
 # Based on your sample data from sample_dashboard_data.json
-# These are the actual RFM means from your training data
+# These are the actual RFM means from your training data (3 clusters)
 rfm_sample_data = np.array([
-    [252.06, 1.47, 409.86],   # Cluster 0: Lost Customers
-    [51.03, 2.32, 686.81],     # Cluster 1: At Risk
-    [29.96, 7.31, 2745.84],    # Cluster 2: Loyal Customers
-    [16.9, 16.39, 7564.54]     # Cluster 3: Champions
+    [60.0, 2.0, 3000.0],     # Cluster 0: Loyal Customers
+    [120.0, 1.0, 1200.0],    # Cluster 1: At Risk
+    [350.0, 1.0, 1000.0],    # Cluster 2: Lost Customers
 ])
 
 print("\nSample RFM Data (Unscaled):")
@@ -55,12 +54,11 @@ print("\n" + "=" * 60)
 print("Test the scaler:")
 print("=" * 60)
 
-# Test examples
+# Test examples (3 clusters: Loyal, At Risk, Lost)
 test_cases = [
-    {"name": "Champion Customer", "rfm": [15, 20, 8500]},
-    {"name": "Lost Customer", "rfm": [250, 1, 350]},
-    {"name": "Loyal Customer", "rfm": [30, 8, 2500]},
-    {"name": "At Risk Customer", "rfm": [100, 2, 500]}
+    {"name": "Loyal Customer", "rfm": [60, 2, 3000]},
+    {"name": "At Risk Customer", "rfm": [120, 1, 1200]},
+    {"name": "Lost Customer", "rfm": [350, 1, 1000]},
 ]
 
 for test in test_cases:
@@ -68,7 +66,7 @@ for test in test_cases:
     rfm_scaled = scaler.transform(rfm_array)
     cluster = kmeans.predict(rfm_scaled)[0]
     
-    cluster_names = {0: "Lost", 1: "At Risk", 2: "Loyal", 3: "Champions"}
+    cluster_names = {0: "Loyal Customers", 1: "At Risk", 2: "Lost Customers"}
     
     print(f"\n{test['name']}:")
     print(f"  RFM: Recency={test['rfm'][0]}, Frequency={test['rfm'][1]}, Monetary=£{test['rfm'][2]}")

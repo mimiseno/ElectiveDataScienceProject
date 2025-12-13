@@ -85,9 +85,8 @@ Automatically installs all required Python packages
 ### Step 6: K-Means Clustering 🎨
 - Performs customer segmentation
 - Assigns cluster labels
-- Creates business-friendly segments:
-  - **Champion**: High value, recent buyers
-  - **Loyal**: Frequent customers
+- Creates business-friendly segments (3 clusters):
+  - **Loyal**: High value, moderate frequency
   - **At Risk**: Declining engagement
   - **Lost**: Need re-engagement
 - Generates 3D visualization
@@ -223,7 +222,7 @@ After running the notebook, you'll get:
 - **Geography**: UK-based online retailer
 
 ### Model Performance (Expected)
-- **Clustering**: 4 distinct customer segments
+- **Clustering**: 3 distinct customer segments (Loyal, At Risk, Lost)
 - **Forecast Accuracy**: 85-90% (MAPE ~10-15%)
 - **Processing Time**: 5-7 minutes in Colab
 

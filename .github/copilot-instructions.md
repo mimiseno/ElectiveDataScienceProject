@@ -121,7 +121,7 @@ export async function POST(request: Request) {
 ### 4. Supabase Integration
 **Tables Structure:**
 - `users` - Extends auth.users with role/status
-- `customers` - RFM data + segment predictions (cluster 0-3)
+- `customers` - RFM data + segment predictions (cluster 0-2)
 - `sales` - Transaction data
 - `sales_forecasts` - XGBoost predictions
 - `activity_logs` - Audit trail (segment_analysis, sales_forecast)
@@ -146,11 +146,10 @@ export async function POST(request: Request) {
 ## Business Logic
 
 ### Customer Segments (K-Means Clusters)
-Based on Olist training data centroids:
-- **Cluster 0 - Loyal Customers:** R=231d, F=1.0, M=₱4,347 (high monetary, low frequency)
-- **Cluster 1 - Lost Customers:** R=383d, F=1.0, M=₱1,134 (high recency, needs win-back)
-- **Cluster 2 - Champions:** R=220d, F=2.0, M=₱2,352 (best frequency + spending)
-- **Cluster 3 - At Risk:** R=129d, F=1.0, M=₱1,134 (recent but low engagement)
+Based on Olist training data (3 clusters):
+- **Cluster 0 - Loyal Customers:** High monetary value, moderate frequency
+- **Cluster 1 - At Risk:** Declining activity, early warning signs - need re-engagement
+- **Cluster 2 - Lost Customers:** High recency, low engagement - need win-back campaigns
 
 **Mapping:** `CLUSTER_NAMES` dict in [backend/api.py](../backend/api.py) and `segmentInfo` in [frontend/app/dashboard/segments/page.tsx](../frontend/app/dashboard/segments/page.tsx).
 

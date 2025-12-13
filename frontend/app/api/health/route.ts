@@ -22,8 +22,10 @@ export async function GET() {
       }, { status: 503 })
     }
 
-    // Test connection
-    const { data, error } = await supabase.from('users').select('count').limit(1)
+    // Test connection using customers table (has RLS but allows reading)
+    const { count, error } = await supabase
+      .from('customers')
+      .select('*', { count: 'exact', head: true })
     
     if (error) {
       return NextResponse.json({
@@ -44,6 +46,7 @@ export async function GET() {
         configured: true,
         connected: true,
         database: 'accessible',
+        customerCount: count,
       },
     })
   } catch (error) {

@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS public.customers (
     frequency INTEGER NOT NULL CHECK (frequency >= 0), -- Total number of purchases
     monetary DECIMAL(12, 2) NOT NULL CHECK (monetary >= 0), -- Total spending (in PHP)
     monetary_brl DECIMAL(12, 2), -- Monetary value in BRL for ML model
-    segment_cluster INTEGER CHECK (segment_cluster BETWEEN 0 AND 3), -- K-Means cluster (0-3)
-    segment_name VARCHAR(50), -- Loyal Customers, Lost Customers, Champions, At Risk
+    segment_cluster INTEGER CHECK (segment_cluster BETWEEN 0 AND 2), -- K-Means cluster (0-2)
+    segment_name VARCHAR(50), -- Loyal Customers, At Risk, Lost Customers
     confidence_score DECIMAL(5, 2), -- Prediction confidence (0-100)
     last_analyzed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -497,15 +497,15 @@ FROM public.users;
 -- 13. USEFUL UTILITY FUNCTIONS
 -- ================================================================
 
--- Function to get segment name from cluster number
+-- Function to get segment name from cluster number (3 clusters)
+-- Based on actual K-Means model: 0=Lost (R=381), 1=At Risk (R=130), 2=Loyal (R=220, F=2)
 CREATE OR REPLACE FUNCTION get_segment_name(cluster_num INTEGER)
 RETURNS VARCHAR AS $$
 BEGIN
     RETURN CASE cluster_num
-        WHEN 0 THEN 'Loyal Customers'
-        WHEN 1 THEN 'Lost Customers'
-        WHEN 2 THEN 'Champions'
-        WHEN 3 THEN 'At Risk'
+        WHEN 0 THEN 'Lost Customers'
+        WHEN 1 THEN 'At Risk'
+        WHEN 2 THEN 'Loyal Customers'
         ELSE 'Unknown'
     END;
 END;

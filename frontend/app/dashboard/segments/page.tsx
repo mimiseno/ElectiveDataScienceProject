@@ -13,15 +13,6 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 
 const segmentInfo = {
   0: {
-    name: "Loyal Customers",
-    icon: Heart,
-    color: "text-chart-2",
-    bgColor: "bg-chart-2/10",
-    chartColor: "var(--chart-2)",
-    description: "High monetary value, moderate frequency. These customers make significant purchases.",
-    recommendations: ["Offer exclusive loyalty rewards", "Early access to new products", "Personalized discount codes"],
-  },
-  1: {
     name: "Lost Customers",
     icon: AlertTriangle,
     color: "text-chart-5",
@@ -34,20 +25,7 @@ const segmentInfo = {
       "Feedback surveys to understand churn",
     ],
   },
-  2: {
-    name: "Champions",
-    icon: Crown,
-    color: "text-chart-1",
-    bgColor: "bg-chart-1/10",
-    chartColor: "var(--chart-1)",
-    description: "Best frequency and spending. Your most valuable customers.",
-    recommendations: [
-      "VIP treatment and exclusive perks",
-      "Referral program incentives",
-      "First access to premium products",
-    ],
-  },
-  3: {
+  1: {
     name: "At Risk",
     icon: TrendingUp,
     color: "text-chart-3",
@@ -55,6 +33,15 @@ const segmentInfo = {
     chartColor: "var(--chart-3)",
     description: "Recent but declining activity. Need attention before they churn.",
     recommendations: ["Re-engagement campaigns", "Personalized product recommendations", "Limited-time offers"],
+  },
+  2: {
+    name: "Loyal Customers",
+    icon: Heart,
+    color: "text-chart-2",
+    bgColor: "bg-chart-2/10",
+    chartColor: "var(--chart-2)",
+    description: "Good frequency and spending. Your valuable repeat customers.",
+    recommendations: ["Offer exclusive loyalty rewards", "Early access to new products", "Personalized discount codes"],
   },
 }
 
@@ -419,7 +406,7 @@ export default function SegmentsPage() {
                   min={1}
                   max={10}
                 />
-                <p className="text-xs text-muted-foreground">Range: 1-10 orders (Champions: 7+, Others: 1-3)</p>
+                <p className="text-xs text-muted-foreground">Range: 1-10 orders (Loyal: 2+, At Risk/Lost: 1)</p>
               </div>
 
               <div className="space-y-2">
@@ -442,34 +429,27 @@ export default function SegmentsPage() {
               {/* Quick Test Examples */}
               <div className="p-3 bg-muted/30 rounded-lg">
                 <p className="text-xs font-medium text-foreground mb-2">Quick Test Examples:</p>
-                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
                   <button 
                     type="button"
-                    onClick={() => { setRecency("10"); setFrequency("8"); setMonetary("35000"); }}
+                    onClick={() => { setRecency("380"); setFrequency("1"); setMonetary("1500"); }}
                     className="text-left hover:text-primary cursor-pointer"
                   >
-                    Champion: R=10, F=8, M=35000
+                    Lost: R=380, F=1, M=1500
                   </button>
                   <button 
                     type="button"
-                    onClick={() => { setRecency("60"); setFrequency("2"); setMonetary("30000"); }}
+                    onClick={() => { setRecency("130"); setFrequency("1"); setMonetary("1500"); }}
                     className="text-left hover:text-primary cursor-pointer"
                   >
-                    Loyal: R=60, F=2, M=30000
+                    At Risk: R=130, F=1, M=1500
                   </button>
                   <button 
                     type="button"
-                    onClick={() => { setRecency("100"); setFrequency("1"); setMonetary("1200"); }}
+                    onClick={() => { setRecency("200"); setFrequency("2"); setMonetary("2500"); }}
                     className="text-left hover:text-primary cursor-pointer"
                   >
-                    At Risk: R=100, F=1, M=1200
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => { setRecency("350"); setFrequency("1"); setMonetary("1500"); }}
-                    className="text-left hover:text-primary cursor-pointer"
-                  >
-                    Lost: R=350, F=1, M=1500
+                    Loyal: R=200, F=2, M=2500
                   </button>
                 </div>
               </div>

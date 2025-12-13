@@ -98,54 +98,43 @@ MODEL_CURRENCY = 'BRL'
 DISPLAY_CURRENCY = 'PHP'
 CURRENCY_SYMBOL = '₱'
 
-# Cluster mapping (4 clusters) - Based on actual Olist-trained model centroids:
-# Cluster 0: R=231d, F=1.0, M=R$414 -> Loyal Customers (high monetary despite low frequency)
-# Cluster 1: R=383d, F=1.0, M=R$108 -> Lost Customers (highest recency, lowest monetary)
-# Cluster 2: R=220d, F=2.0, M=R$224 -> Champions (best frequency, good monetary)
-# Cluster 3: R=129d, F=1.0, M=R$108 -> At Risk (lowest recency but low engagement)
+# Cluster mapping (3 clusters) - Based on retrained K-Means model:
+# Cluster 0: Lost Customers (R=381, F=1.0, M=141 - highest recency, lowest engagement)
+# Cluster 1: At Risk (R=130, F=1.0, M=147 - medium recency, declining activity)
+# Cluster 2: Loyal Customers (R=220, F=2.0, M=224 - best frequency and spending)
 CLUSTER_NAMES = {
-    0: "Loyal Customers",
-    1: "Lost Customers",
-    2: "Champions",
-    3: "At Risk"
+    0: "Lost Customers",
+    1: "At Risk",
+    2: "Loyal Customers"
 }
 
 CLUSTER_DESCRIPTIONS = {
-    0: "Customers with high spending but infrequent purchases. Focus on increasing purchase frequency through loyalty programs.",
-    1: "Customers who haven't purchased recently and have low engagement. They need win-back campaigns and special re-activation offers.",
-    2: "Best customers with highest frequency and good spending. Target for VIP programs, exclusive offers, and referral programs.",
-    3: "Recent customers with low engagement showing early warning signs. Re-engage before they become lost customers."
+    0: "Customers who haven't purchased recently and have low engagement. They need win-back campaigns and special re-activation offers.",
+    1: "Recent customers with declining activity showing early warning signs. Re-engage before they become lost customers.",
+    2: "Customers with good spending and frequency. Focus on retention through loyalty programs."
 }
 
 CLUSTER_RECOMMENDATIONS = {
     0: [
-        "Implement loyalty rewards program",
-        "Early access to new products",
-        "Birthday/anniversary special offers",
-        "Request reviews and referrals",
-        "Invite to exclusive member events"
-    ],
-    1: [
         "Send win-back email with special discount (20-30% off)",
         "Offer exclusive 'we miss you' promotion",
         "Use retargeting ads on social media",
         "Provide loyalty points bonus for return",
         "Survey to understand why they left"
     ],
-    2: [
-        "VIP tier with exclusive benefits",
-        "Premium customer service priority",
-        "Exclusive event invitations",
-        "Upsell premium products",
-        "Surprise gifts and personalized offers",
-        "Brand ambassador program invitation"
-    ],
-    3: [
+    1: [
         "Send reminder emails about new arrivals",
         "Personalized product recommendations",
         "Re-engage with limited-time offers",
         "First purchase anniversary celebration",
         "Survey to understand their needs"
+    ],
+    2: [
+        "Implement loyalty rewards program",
+        "Early access to new products",
+        "Birthday/anniversary special offers",
+        "Request reviews and referrals",
+        "Invite to exclusive member events"
     ]
 }
 

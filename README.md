@@ -26,7 +26,7 @@ Praedion is a production-ready analytics platform that leverages machine learnin
 
 ### Key Features
 
-✅ **Customer Segmentation** - K-Means clustering with RFM analysis (4 segments)  
+✅ **Customer Segmentation** - K-Means clustering with RFM analysis (3 segments)  
 ✅ **Sales Forecasting** - Prophet + XGBoost ensemble (7-365 days ahead)  
 ✅ **User Authentication** - Supabase-powered secure auth with RLS  
 ✅ **Real-time Analytics** - Live dashboard with ML predictions  
@@ -235,7 +235,7 @@ GET http://localhost:5000/models/info
 ### K-Means Customer Segmentation Model
 - **File**: `ai_models/kmeans_model_customer_categorization.joblib`
 - **Features**: Recency, Frequency, Monetary
-- **Clusters**: 4 (Lost, At Risk, Loyal, Champions)
+- **Clusters**: 3 (Loyal, At Risk, Lost)
 - **Silhouette Score**: 0.42
 
 ### Prophet Sales Forecast Model
@@ -273,7 +273,7 @@ GET http://localhost:5000/models/info
 
 ### Customer Segmentation
 - ✅ RFM Analysis (Recency, Frequency, Monetary)
-- ✅ K-Means Clustering (4 segments)
+- ✅ K-Means Clustering (3 segments)
 - ✅ Silhouette Score: 0.42
 - ✅ Business recommendations per segment
 - ✅ Real-time cluster prediction
@@ -340,10 +340,9 @@ GET http://localhost:5000/models/info
 The analysis provides:
 
 1. **Customer Behavior Patterns**
-   - Champions: High value, recent purchases
-   - Loyal: Frequent buyers
-   - At Risk: Declining engagement
-   - Lost: Need re-engagement
+   - Loyal: High value, moderate frequency
+   - At Risk: Declining engagement, need attention
+   - Lost: Need re-engagement campaigns
 
 2. **Sales Predictions**
    - Daily sales forecasts with 85%+ accuracy

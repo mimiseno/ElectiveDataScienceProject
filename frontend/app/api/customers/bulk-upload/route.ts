@@ -177,7 +177,7 @@ export async function POST(request: Request) {
     // Process customers using optimized bulk endpoint
     console.log(`Processing ${customers.length} customers in bulk...`)
     const results: ProcessingResult[] = []
-    const segmentCounts: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0 }
+    const segmentCounts: Record<number, number> = { 0: 0, 1: 0, 2: 0 }  // 3 clusters: Loyal, At Risk, Lost
     let successCount = 0
     let failCount = 0
 
@@ -263,13 +263,12 @@ export async function POST(request: Request) {
       )
     }
 
-    // Calculate segment distribution
+    // Calculate segment distribution (3 clusters: Lost, At Risk, Loyal)
     const totalProcessed = successCount
     const segmentNames: Record<number, string> = {
-      0: 'Loyal Customers',
-      1: 'Lost Customers',
-      2: 'Champions',
-      3: 'At Risk',
+      0: 'Lost Customers',
+      1: 'At Risk',
+      2: 'Loyal Customers',
     }
 
     const distribution = Object.entries(segmentCounts).map(([cluster, count]) => ({
